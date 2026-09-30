@@ -1,0 +1,417 @@
+import type { LexicalEditor, LexicalEditorWithDispose, NodeKey } from 'lexical'
+import type { JSX } from 'react'
+
+import '../nodes/image/image-node.css'
+
+import { useLexicalComposerContext } from '@lexical/react/LexicalComposerContext'
+import { LexicalExtensionEditorComposer } from '@lexical/react/LexicalExtensionEditorComposer'
+import { useLexicalEditable } from '@lexical/react/useLexicalEditable'
+import { useLexicalNodeSelection } from '@lexical/react/useLexicalNodeSelection'
+import { mergeRegister } from '@lexical/utils'
+import { IconPhotoOff } from '@tabler/icons-react'
+import {
+  $getNodeByKey,
+  $getRoot,
+  $getSelection,
+  $isNodeSelection,
+  $setSelection,
+  BLUR_COMMAND,
+  CLICK_COMMAND,
+  COMMAND_PRIORITY_EDITOR,
+  COMMAND_PRIORITY_LOW,
+  DRAGSTART_COMMAND,
+  KEY_ENTER_COMMAND,
+  KEY_ESCAPE_COMMAND,
+  SELECTION_CHANGE_COMMAND,
+} from 'lexical'
+import {
+  Suspense,
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from 'react'
+
+import {
+  $isCaptionEditorEmpty,
+  $isImageNode,
+  ImageNodeType,
+} from '../nodes/image/image.node'
+import { ImageResizerComponent } from './image-resizer.component'
+
+type ImageStatus =
+  { error: true } | { error: false; width: number; height: number }
+
+const imageCache = new Map<string, Promise<ImageStatus> | ImageStatus>()
+
+function DisableCaptionOnBlur({
+  setShowCaption,
+}: {
+  setShowCaption: (show: boolean) => void
+}) {
+  const [editor] = useLexicalComposerContext()
+
+  useEffect(() =>
+    editor.registerCommand(
+      BLUR_COMMAND,
+      () => {
+        if ($isCaptionEditorEmpty()) {
+          setShowCaption(false)
+        }
+        return false
+      },
+      COMMAND_PRIORITY_EDITOR,
+    ),
+  )
+  return null
+}
+
+function useSuspenseImage(src: string): ImageStatus {
+  let cached = imageCache.get(src)
+  if (cached && 'error' in cached && typeof cached.error === 'boolean') {
+    return cached
+  } else if (!cached) {
+    cached = new Promise<ImageStatus>(resolve => {
+      const img = new Image()
+      img.src = src
+      img.onload = () =>
+        resolve({
+          error: false,
+          height: img.naturalHeight,
+          width: img.naturalWidth,
+        })
+      img.onerror = () => resolve({ error: true })
+    }).then(rval => {
+      imageCache.set(src, rval)
+      return rval
+    })
+    imageCache.set(src, cached)
+    throw cached
+  }
+  throw cached
+}
+
+function LazyImage({
+  altText,
+  imageType,
+  className,
+  imageRef,
+  src,
+  width,
+  height,
+  onError,
+}: {
+  altText: string
+  imageType: ImageNodeType
+  className: string | null
+  height: 'inherit' | number
+  imageRef: { current: null | HTMLImageElement }
+  src: string
+  width: 'inherit' | number
+  onError: () => void
+}): JSX.Element {
+  const status = useSuspenseImage(src)
+
+  useEffect(() => {
+    if (status.error) {
+      onError()
+    }
+  }, [status.error, onError])
+
+  if (status.error) {
+    return <BrokenImage />
+  }
+
+  const imageStyle: React.CSSProperties =
+    width !== 'inherit' && height !== 'inherit'
+      ? {
+          // User has resized — use exact dimensions
+          width,
+          height,
+        }
+      : {
+          // No resize — show at natural size, capped by editor width
+          display: 'block',
+          height: 'auto',
+        }
+
+  return (
+    <img
+      className={className || undefined}
+      src={src}
+      alt={altText}
+      data-type={imageType}
+      ref={imageRef}
+      style={imageStyle}
+      onError={onError}
+      draggable="false"
+    />
+  )
+}
+
+function BrokenImage(): JSX.Element {
+  return (
+    <span
+      className="flex size-10 items-center justify-center opacity-40"
+      draggable="false"
+    >
+      <IconPhotoOff className="size-full" />
+    </span>
+  )
+}
+
+export function ImageComponent({
+  src,
+  altText,
+  imageType,
+  nodeKey,
+  width,
+  height,
+  resizable,
+  showCaption,
+  caption,
+  captionsEnabled,
+}: {
+  altText: string
+  imageType: ImageNodeType
+  caption: LexicalEditorWithDispose
+  height: 'inherit' | number
+  nodeKey: NodeKey
+  resizable: boolean
+  showCaption: boolean
+  src: string
+  width: 'inherit' | number
+  captionsEnabled: boolean
+}): JSX.Element {
+  const imageRef = useRef<null | HTMLImageElement>(null)
+  const buttonRef = useRef<HTMLButtonElement | null>(null)
+  const [isSelected, setSelected, clearSelection] =
+    useLexicalNodeSelection(nodeKey)
+  const [isResizing, setIsResizing] = useState<boolean>(false)
+  const [editor] = useLexicalComposerContext()
+  const activeEditorRef = useRef<LexicalEditor | null>(null)
+  const [isLoadError, setIsLoadError] = useState<boolean>(false)
+  const isEditable = useLexicalEditable()
+  const isInNodeSelection = useMemo(
+    () =>
+      isSelected &&
+      editor.getEditorState().read(() => {
+        const selection = $getSelection()
+        return $isNodeSelection(selection) && selection.has(nodeKey)
+      }),
+    [editor, isSelected, nodeKey],
+  )
+
+  const $onEnter = useCallback(
+    (event: KeyboardEvent) => {
+      const latestSelection = $getSelection()
+      const buttonElem = buttonRef.current
+      if (
+        $isNodeSelection(latestSelection) &&
+        latestSelection.has(nodeKey) &&
+        latestSelection.getNodes().length === 1
+      ) {
+        if (showCaption) {
+          // Move focus into nested editor
+          $setSelection(null)
+          event.preventDefault()
+          caption.focus()
+          return true
+        } else if (
+          buttonElem !== null &&
+          buttonElem !== document.activeElement
+        ) {
+          event.preventDefault()
+          buttonElem.focus()
+          return true
+        }
+      }
+      return false
+    },
+    [caption, nodeKey, showCaption],
+  )
+
+  const $onEscape = useCallback(
+    (event: KeyboardEvent) => {
+      if (
+        activeEditorRef.current === caption ||
+        buttonRef.current === event.target
+      ) {
+        $setSelection(null)
+        editor.update(() => {
+          setSelected(true)
+          const parentRootElement = editor.getRootElement()
+          if (parentRootElement !== null) {
+            parentRootElement.focus()
+          }
+        })
+        return true
+      }
+      return false
+    },
+    [caption, editor, setSelected],
+  )
+
+  const onClick = useCallback(
+    (payload: MouseEvent) => {
+      const event = payload
+
+      if (isResizing) {
+        return true
+      }
+      if (event.target === imageRef.current) {
+        if (event.shiftKey) {
+          setSelected(!isSelected)
+        } else {
+          clearSelection()
+          setSelected(true)
+        }
+        return true
+      }
+
+      return false
+    },
+    [isResizing, isSelected, setSelected, clearSelection],
+  )
+
+  useEffect(() => {
+    return mergeRegister(
+      editor.registerCommand(
+        SELECTION_CHANGE_COMMAND,
+        (_, activeEditor) => {
+          activeEditorRef.current = activeEditor
+          return false
+        },
+        COMMAND_PRIORITY_LOW,
+      ),
+      editor.registerCommand(
+        DRAGSTART_COMMAND,
+        event => {
+          if (event.target === imageRef.current && !isInNodeSelection) {
+            // TODO This is just a temporary workaround for FF to behave like other browsers.
+            // Ideally, this handles drag & drop too (and all browsers).
+            event.preventDefault()
+            return true
+          }
+          return false
+        },
+        COMMAND_PRIORITY_LOW,
+      ),
+    )
+  }, [editor, isInNodeSelection])
+
+  useEffect(() => {
+    return mergeRegister(
+      editor.registerCommand<MouseEvent>(
+        CLICK_COMMAND,
+        onClick,
+        COMMAND_PRIORITY_LOW,
+      ),
+
+      editor.registerCommand(KEY_ENTER_COMMAND, $onEnter, COMMAND_PRIORITY_LOW),
+      editor.registerCommand(
+        KEY_ESCAPE_COMMAND,
+        $onEscape,
+        COMMAND_PRIORITY_LOW,
+      ),
+    )
+  }, [editor, $onEnter, $onEscape, onClick])
+
+  const setShowCaption = (show: boolean) => {
+    editor.update(() => {
+      const node = $getNodeByKey(nodeKey)
+      if ($isImageNode(node)) {
+        node.setShowCaption(show)
+        if (show) {
+          node.__caption.update(() => {
+            if (!$getSelection()) {
+              $getRoot().selectEnd()
+            }
+          })
+        }
+      }
+    })
+  }
+
+  const onResizeEnd = (
+    nextWidth: 'inherit' | number,
+    nextHeight: 'inherit' | number,
+  ) => {
+    // Delay hiding the resize bars for click case
+    setTimeout(() => {
+      setIsResizing(false)
+    }, 200)
+
+    editor.update(() => {
+      const node = $getNodeByKey(nodeKey)
+      if ($isImageNode(node)) {
+        const w =
+          typeof nextWidth === 'number'
+            ? Math.round(nextWidth * 100) / 100 || 0
+            : nextWidth
+
+        const h =
+          typeof nextHeight === 'number'
+            ? Math.round(nextHeight * 100) / 100 || 0
+            : nextHeight
+
+        node.setWidthAndHeight(w, h)
+      }
+    })
+  }
+
+  const onResizeStart = () => {
+    setIsResizing(true)
+  }
+
+  const draggable = isInNodeSelection && !isResizing
+  const isFocused = (isSelected || isResizing) && isEditable
+
+  return (
+    <Suspense fallback={null}>
+      <>
+        <span draggable={draggable} style={{ display: 'block' }}>
+          {isLoadError ? (
+            <BrokenImage />
+          ) : (
+            <LazyImage
+              className={
+                isFocused
+                  ? `focused ${isInNodeSelection ? 'draggable' : ''}`
+                  : null
+              }
+              src={src}
+              altText={altText}
+              imageType={imageType}
+              imageRef={imageRef}
+              width={width}
+              height={height}
+              onError={() => setIsLoadError(true)}
+            />
+          )}
+        </span>
+
+        {showCaption && (
+          <div className="image-caption-container">
+            <LexicalExtensionEditorComposer initialEditor={caption}>
+              <DisableCaptionOnBlur setShowCaption={setShowCaption} />
+            </LexicalExtensionEditorComposer>
+          </div>
+        )}
+        {resizable && isInNodeSelection && isFocused && (
+          <ImageResizerComponent
+            showCaption={showCaption}
+            setShowCaption={setShowCaption}
+            editor={editor}
+            buttonRef={buttonRef}
+            imageRef={imageRef}
+            onResizeStart={onResizeStart}
+            onResizeEnd={onResizeEnd}
+            captionsEnabled={!isLoadError && captionsEnabled}
+          />
+        )}
+      </>
+    </Suspense>
+  )
+}
