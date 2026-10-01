@@ -15,9 +15,9 @@ class MongoManager {
   private isConnecting = false
 
   public USERS_COLL = 'users'
+  public CATEGORY_COLL = 'category'
   public POSTS_COLL = 'posts'
   public POSTS_DRAFT_COLL = 'posts_draft'
-  public POSTS_CATEGORY_COLL = 'posts_category'
   public PRODUCTS_COLL = 'products'
   public PRODUCTS_DRAFT_COLL = 'products_draft'
   public BRANDS_COLL = 'brands'

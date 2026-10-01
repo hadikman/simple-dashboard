@@ -1,0 +1,82 @@
+import { ObjectId } from 'mongodb'
+
+import {
+  type ICategoryDocument,
+  type TAddCategoryData,
+  type TAddCategoryResponse,
+  categoryErrors,
+} from '../'
+
+import { mongoManager } from '@/config/db/MongoManager'
+
+export async function addCategory(
+  categoryData: TAddCategoryData,
+): Promise<TAddCategoryResponse> {
+  const db = await mongoManager.getConnectedDatabase()
+  const { category_group, name, parentId } = categoryData
+  const collection = db.collection<ICategoryDocument>(
+    mongoManager.CATEGORY_COLL,
+  )
+
+  let existingCategoryId = null,
+    existingCategoryParent = null
+
+  existingCategoryId = await collection.findOne({ category_group, name })
+
+  if (parentId) {
+    const objectId = new ObjectId(parentId)
+
+    existingCategoryParent = await collection.findOne({
+      category_group,
+      _id: objectId,
+      children: name,
+    })
+  }
+
+  const isDuplicateCategoryWithoutParent = existingCategoryId && parentId === ''
+  const isDuplicateCategoryWithParent =
+    existingCategoryParent && existingCategoryId
+  const isDuplicateCategory =
+    isDuplicateCategoryWithoutParent || isDuplicateCategoryWithParent
+
+  if (isDuplicateCategory) {
+    return {
+      success: false,
+      errors: {
+        general: categoryErrors['CATEGORY_EXISTS'].server,
+        code: 'CATEGORY_EXISTS',
+      },
+    }
+  }
+
+  const newCategoryDoc: ICategoryDocument = {
+    category_group,
+    name,
+    children: [],
+  }
+
+  const data = await collection.insertOne(newCategoryDoc)
+  if (parentId) {
+    const objectId = new ObjectId(parentId)
+
+    await collection.updateOne(
+      { _id: objectId },
+      { $addToSet: { children: name } },
+    )
+  }
+
+  if (!data) {
+    return {
+      success: false,
+      errors: {
+        general: categoryErrors['CREATE_FAILURE'].server,
+        code: 'CREATE_FAILURE',
+      },
+    }
+  }
+
+  return {
+    success: true,
+    category: { id: data.insertedId.toString('hex') },
+  }
+}
