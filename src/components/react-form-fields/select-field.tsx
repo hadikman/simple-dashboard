@@ -1,6 +1,8 @@
 import * as SelectPrimitive from '@radix-ui/react-select'
 
-import { Field, FieldError, FieldLabel } from '@/components/ui/field'
+import { resolveValue, safeId } from '@/helpers/utils'
+import { useFieldContext } from '@/hooks/create-react-form-hook'
+import { Field, FieldError, FieldLabel } from '../ui/field'
 import {
   Select,
   SelectContent,
@@ -8,9 +10,7 @@ import {
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from '@/components/ui/select'
-import { resolveValue, safeId } from '@/helpers/utils'
-import { useFieldContext } from '@/hooks/create-react-form-hook'
+} from '../ui/select'
 
 type Props = {
   fieldClassName?: string

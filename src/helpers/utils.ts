@@ -15,6 +15,39 @@ export async function comparePassword(password: string, hash: string) {
 }
 
 /**
+ * Normalizes a string into a URL-friendly slug.
+ *
+ * The transformation applies, in order:
+ * 1. Trims leading and trailing whitespace.
+ * 2. Converts the string to lowercase.
+ * 3. Replaces runs of whitespace with a single hyphen.
+ * 4. Removes any character that is not a lowercase letter, digit, or hyphen.
+ * 5. Collapses consecutive hyphens into a single hyphen.
+ * 6. Strips leading and trailing hyphens.
+ *
+ * @param value - The input string to normalize.
+ * @returns The normalized slug. May be an empty string if the input contains
+ *          no alphanumeric characters (e.g. `'---'` or `'@@@'`).
+ *
+ * @example
+ * normalizeSlug('Hello World')         // => 'hello-world'
+ * normalizeSlug('  Foo   Bar  ')       // => 'foo-bar'
+ * normalizeSlug('Hello, World!')       // => 'hello-world'
+ * normalizeSlug('Café déjà vu')        // => 'caf-d-j-vu' (non-ASCII removed)
+ * normalizeSlug('--already--slugged--')// => 'already-slugged'
+ * normalizeSlug('@@@')                 // => ''
+ */
+export function normalizeSlug(value: string) {
+  return value
+    .trim()
+    .toLowerCase()
+    .replace(/\s+/g, '-')
+    .replace(/[^a-z0-9-]/g, '')
+    .replace(/-+/g, '-')
+    .replace(/^-+|-+$/g, '')
+}
+
+/**
  * Returns a date normalized to UTC by removing the local timezone offset.
  *
  * This function creates a Date object that represents the same UTC time
@@ -153,6 +186,35 @@ export function resolveValue<T>(
  */
 export function isString(string: unknown): string is string {
   return typeof string === 'string'
+}
+
+/**
+ * Returns the current date and time as a `Date` object normalized to UTC.
+ *
+ * The implementation round-trips through `toISOString()`, which produces an
+ * ISO 8601 string in UTC (e.g. `"2024-01-15T12:34:56.789Z"`). Parsing that
+ * string back into a `Date` yields a `Date` whose internal timestamp
+ * represents the same instant, but which is effectively "UTC-anchored" —
+ * useful when you want a `Date` that won't be reinterpreted by local
+ * timezone logic elsewhere in your code.
+ *
+ * @returns {Date} A new `Date` instance representing the current instant,
+ *   derived from the UTC ISO string. Note that the returned `Date` is still
+ *   a normal `Date` object — its `getHours()`, `getFullYear()`, etc. will
+ *   still return local-time values unless you use the `getUTC*` variants.
+ *
+ * @example
+ * const now = getCurrentUTCDate()
+ * // now.toISOString() === new Date().toISOString() (same instant)
+ * // now instanceof Date === true
+ *
+ * @example
+ * // Why this matters: avoiding local-timezone drift when serializing.
+ * const utc = getCurrentUTCDate()
+ * utc.toISOString() // always UTC, e.g. "2024-01-15T12:34:56.789Z"
+ */
+export function getCurrentUTCDate(): Date {
+  return new Date(new Date().toISOString())
 }
 
 /**

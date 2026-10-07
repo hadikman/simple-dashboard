@@ -1,7 +1,7 @@
 import React from 'react'
 
-import { Button } from '@/components/ui/button'
 import { useFormContext } from '@/hooks/create-react-form-hook'
+import { Button } from '../ui/button'
 
 type Props = {
   label: string

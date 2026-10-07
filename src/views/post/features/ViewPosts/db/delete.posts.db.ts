@@ -1,0 +1,110 @@
+import { DeleteResult, ObjectId } from 'mongodb'
+
+import {
+  postErrors,
+  type IPostDocument,
+  type TDeletePostsData,
+  type TDeletePostsResponse,
+} from '../../../shared'
+
+import { mongoManager } from '@/config/db/MongoManager'
+
+export async function deletePosts(
+  deletePostData: TDeletePostsData,
+): Promise<TDeletePostsResponse> {
+  const db = await mongoManager.getConnectedDatabase()
+  const postsColl = db.collection<IPostDocument>(mongoManager.POSTS_COLL)
+  const postsDraftColl = db.collection<IPostDocument>(
+    mongoManager.POSTS_DRAFT_COLL,
+  )
+  let data: DeleteResult = { acknowledged: false, deletedCount: 0 },
+    draftData: DeleteResult = { acknowledged: false, deletedCount: 0 }
+
+  const [posts, onlyDrafts, postsForUpdate] = deletePostData.reduce<
+    [TDeletePostsData, TDeletePostsData, TDeletePostsData]
+  >(
+    (acc, cur) => {
+      if (cur.hasDraft && !cur.isPublished) {
+        acc[0].push(cur) // Audit (published)
+        acc[1].push(cur) //  Audit (draft)
+      } else if (cur.onlyDeleteDraft) {
+        acc[1].push(cur) // Draft
+        acc[2].push(cur) // Add post to update has_draft
+      } else {
+        acc[0].push(cur) // Published
+      }
+
+      return acc
+    },
+    [[], [], []],
+  )
+
+  if (posts.length) {
+    const [postsObjectIds, postsGroupIds] = posts.reduce<
+      [ObjectId[], string[]]
+    >(
+      (acc, cur) => {
+        acc[0].push(new ObjectId(cur.id))
+        acc[1].push(cur.postGroupId)
+
+        return acc
+      },
+      [[], []],
+    )
+
+    data = await postsColl.deleteMany({
+      post_group_id: { $in: postsGroupIds },
+    })
+
+    if (!data) {
+      return {
+        success: false,
+        errors: {
+          general: postErrors['DELETE_POSTS_FAILURE'].server,
+          code: 'DELETE_POSTS_FAILURE',
+        },
+      }
+    }
+
+    await postsColl.updateMany(
+      { 'linked_posts.related': { $in: postsObjectIds } },
+      {
+        $pull: {
+          'linked_posts.related': { $in: postsObjectIds },
+        },
+      },
+    )
+  }
+
+  if (onlyDrafts.length) {
+    const postsGroupIds = onlyDrafts.map(({ postGroupId }) => postGroupId)
+    draftData = await postsDraftColl.deleteMany({
+      post_group_id: { $in: postsGroupIds },
+    })
+
+    if (!draftData) {
+      return {
+        success: false,
+        errors: {
+          general: postErrors['DELETE_DRAFTS_FAILURE'].server,
+          code: 'DELETE_DRAFTS_FAILURE',
+        },
+      }
+    }
+  }
+
+  if (postsForUpdate.length) {
+    const postGroupIds = postsForUpdate.map(({ postGroupId }) => postGroupId)
+    await postsColl.updateMany(
+      { post_group_id: { $in: postGroupIds } },
+      { $set: { has_draft: false } },
+    )
+  }
+
+  const deleteCount = data.deletedCount + draftData.deletedCount
+
+  return {
+    success: true,
+    deleteCount,
+  }
+}

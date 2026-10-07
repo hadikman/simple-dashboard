@@ -1,7 +1,7 @@
-import { Field, FieldError, FieldLabel } from '@/components/ui/field'
-import { Input } from '@/components/ui/input'
-import { safeId, resolveValue } from '@/helpers/utils'
+import { resolveValue, safeId } from '@/helpers/utils'
 import { useFieldContext } from '@/hooks/create-react-form-hook'
+import { Field, FieldError, FieldLabel } from '../ui/field'
+import { Input } from '../ui/input'
 
 type Props = {
   fieldClassName?: string
