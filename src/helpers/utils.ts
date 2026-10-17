@@ -378,6 +378,57 @@ export function appendIfDefined(
 }
 
 /**
+ * Appends a numeric value to a `FormData` instance only if it is a valid,
+ * non-zero number.
+ *
+ * "Valid" here means:
+ * - The value's runtime type is `number` (checked via `typeof`).
+ * - The value is not `0`.
+ *
+ * The value is converted to a string via `Number.prototype.toString()` before
+ * being appended. If the value is not a number, or is exactly `0`, the
+ * function is a no-op and the `FormData` remains unchanged.
+ *
+ * @template T - The static type of `value`. The generic parameter is kept
+ *   for call-site type inference, but the runtime check narrows to `number`,
+ *   so `T` is effectively only meaningful for the caller's own type safety
+ *   and has no effect on the appended payload.
+ *
+ * @param {FormData} fd - The `FormData` instance to append the value to.
+ * @param {string} key - The field name under which the value will be stored.
+ * @param {T} value - The value to conditionally append. Appended only when
+ *   `typeof value === 'number'` and `value !== 0`.
+ * @returns {void} This function does not return a value.
+ *
+ * @example
+ * const fd = new FormData()
+ * appendIfValidNumber(fd, 'count', 5)      // appends: count = '5'
+ * appendIfValidNumber(fd, 'count', -3)     // appends: count = '-3'
+ * appendIfValidNumber(fd, 'count', 0)      // no-op (zero is skipped)
+ * appendIfValidNumber(fd, 'count', '5')    // no-op (string, not number)
+ * appendIfValidNumber(fd, 'count', null)   // no-op
+ * appendIfValidNumber(fd, 'count', NaN)    // appends: count = 'NaN'
+ *
+ * @example
+ * // Building a form payload while skipping empty numeric fields.
+ * const payload = { page: 1, offset: 0, limit: 20 }
+ * const fd = new FormData()
+ * for (const [key, value] of Object.entries(payload)) {
+ *   appendIfValidNumber(fd, key, value)
+ * }
+ * // fd contains: page = '1' and limit = '20' (offset is skipped)
+ */
+export function appendIfValidNumber<T>(
+  fd: FormData,
+  key: string,
+  value: T,
+): void {
+  if (typeof value === 'number' && value !== 0) {
+    fd.append(key, value.toString())
+  }
+}
+
+/**
  * Parses a `FormData` entry by key and returns the deserialized value.
  *
  * Assumes the value was stored using `JSON.stringify` (e.g., via
