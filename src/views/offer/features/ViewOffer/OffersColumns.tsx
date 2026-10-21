@@ -1,7 +1,6 @@
 import { IconDotsVertical } from '@tabler/icons-react'
 import { ColumnDef } from '@tanstack/react-table'
 import Link from 'next/link'
-import React from 'react'
 import { toast } from 'sonner'
 
 import {
@@ -10,7 +9,7 @@ import {
   offerErrors,
 } from '../../shared'
 
-import { Badge } from '@/components/ui/badge'
+import { Cell, CellBadge } from '@/components/data-table'
 import { Button } from '@/components/ui/button'
 import {
   DropdownMenu,
@@ -21,7 +20,6 @@ import {
 import { deleteConfirmation } from '@/helpers/confirmation-utils'
 import {
   capitalizeWords,
-  cn,
   formatLocalDateTime,
   withMinDelay,
 } from '@/helpers/utils'
@@ -56,8 +54,10 @@ export const columns: ColumnDef<TOfferLookupResponse>[] = [
   {
     accessorFn: row => row.target_items.length,
     id: 'stats_product_count',
-    header: 'Items Count',
-    cell: ({ row }) => row.original.target_items.length,
+    header: 'Items',
+    cell: ({ row }) => (
+      <Cell value={row.original.target_items.length.toString()} />
+    ),
     meta: { minSize: 70, size: 70, filterVariant: 'range' },
   },
   {
@@ -97,8 +97,12 @@ export const columns: ColumnDef<TOfferLookupResponse>[] = [
   {
     accessorFn: row => row.discount,
     id: 'discount',
-    header: 'Discount %',
-    cell: ({ row }) => <Cell value={row.original.discount} />,
+    header: () => (
+      <span>
+        Discount <span className="text-xs">%</span>
+      </span>
+    ),
+    cell: ({ row }) => <Cell value={row.original.discount.toString()} />,
     meta: { minSize: 70, size: 70, filterVariant: 'range' },
   },
   {
@@ -242,27 +246,3 @@ export const columns: ColumnDef<TOfferLookupResponse>[] = [
     meta: { size: 32 },
   },
 ]
-
-type CellType = {
-  value: string | number
-}
-function Cell({ value }: CellType) {
-  return (
-    <span className="text-muted-foreground text-xs font-medium text-wrap">
-      {value}
-    </span>
-  )
-}
-
-type CellBadgeType = React.ComponentProps<typeof Badge>
-function CellBadge({ children, variant, className, ...props }: CellBadgeType) {
-  return (
-    <Badge
-      {...props}
-      variant={variant ?? 'outline'}
-      className={cn('text-muted-foreground px-1.5', className)}
-    >
-      {children}
-    </Badge>
-  )
-}

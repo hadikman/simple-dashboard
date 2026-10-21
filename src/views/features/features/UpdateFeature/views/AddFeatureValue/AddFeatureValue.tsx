@@ -8,13 +8,7 @@ import {
   featureErrors,
 } from '../../../../shared'
 
-import {
-  Field,
-  FieldDescription,
-  FieldGroup,
-  FieldLegend,
-  FieldSet,
-} from '@/components/ui/field'
+import { Field, FieldGroup, FieldSet } from '@/components/ui/field'
 import { withMinDelay } from '@/helpers/utils'
 import { useAppForm } from '@/hooks/create-react-form-hook'
 import { addFeatureValueAction } from './add-feature-value.action'
@@ -27,8 +21,8 @@ const defaultValues: FeatureValueSchemaT = {
   value: '',
 }
 
-type FeatureValueAddProps = { featureData: TGetFeatureLookupResponse }
-export function FeatureValueAdd({ featureData }: FeatureValueAddProps) {
+type AddFeatureValueProps = { featureData: TGetFeatureLookupResponse }
+export function AddFeatureValue({ featureData }: AddFeatureValueProps) {
   const { success } = featureData
 
   const form = useAppForm({
@@ -74,10 +68,8 @@ export function FeatureValueAdd({ featureData }: FeatureValueAddProps) {
   })
 
   return (
-    <FieldSet>
-      <FieldLegend>Values</FieldLegend>
-      <FieldDescription>Add and edit values</FieldDescription>
-      <form id="add-value-form" onSubmit={e => e.preventDefault()}>
+    <form id="add-value-form" onSubmit={e => e.preventDefault()}>
+      <FieldSet>
         <FieldGroup>
           <form.AppField name="value">
             {field => <field.TextField label="Value" />}
@@ -89,7 +81,7 @@ export function FeatureValueAdd({ featureData }: FeatureValueAddProps) {
             </form.AppForm>
           </Field>
         </FieldGroup>
-      </form>
-    </FieldSet>
+      </FieldSet>
+    </form>
   )
 }

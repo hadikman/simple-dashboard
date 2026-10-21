@@ -41,8 +41,7 @@ export function UpdateFeaturePage({ slug }: { slug: string }) {
       <FieldLegend>
         Edit {featureData.success ? featureData.feature.name : ''} Feature
       </FieldLegend>
-      <FieldDescription>Fill the desire fields</FieldDescription>
-
+      <FieldDescription>Fill value field</FieldDescription>
       <FieldGroup className="lg:grid lg:grid-cols-[1fr_var(--container-xs)]">
         <React.Suspense fallback={<Spinner />}>
           <FeatureValues featureData={featureData} />

@@ -28,3 +28,30 @@ export async function deleteConfirmation(
     })
   })
 }
+
+export async function copyConfirmation(
+  item: string = 'Item',
+  description?: React.ReactNode,
+) {
+  return new Promise(resolve => {
+    toast(`Copying ${item}`, {
+      description: (
+        <div className="grid">
+          Are you sure you want to make a copy?
+          {description}
+        </div>
+      ),
+      actionButtonStyle: { marginInlineStart: '0px' },
+      action: {
+        label: 'Yes',
+        onClick: () => resolve(true),
+      },
+      cancel: {
+        label: 'No',
+        onClick: () => resolve(false),
+      },
+      onAutoClose: () => resolve(false),
+      onDismiss: () => resolve(false),
+    })
+  })
+}

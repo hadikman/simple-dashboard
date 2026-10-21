@@ -5,7 +5,6 @@ import {
 } from '@tabler/icons-react'
 import { ColumnDef } from '@tanstack/react-table'
 import Link from 'next/link'
-import React from 'react'
 import { toast } from 'sonner'
 
 import { HOME_DIRECTORY } from '@/views/media'
@@ -14,8 +13,13 @@ import type { TProductLookupResponseWithSubRows } from '../view-products.types'
 
 import { deleteProductAction, productErrors } from '../../../shared'
 
+import {
+  CellBadge,
+  CellInput,
+  NO_SPECIFIED,
+  SPECIFIED_VALUE_FOR_CATEGORIES,
+} from '@/components/data-table'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
-import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Checkbox } from '@/components/ui/checkbox'
 import {
@@ -25,17 +29,16 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
-import { Input } from '@/components/ui/input'
 import {
   Tooltip,
   TooltipContent,
   TooltipTrigger,
 } from '@/components/ui/tooltip'
 import {
-  NO_SPECIFIED,
-  SPECIFIED_VALUE_FOR_CATEGORIES,
-} from '@/constants/common.constants'
-import { cn, getFilename, withMinDelay } from '@/helpers/utils'
+  copyConfirmation,
+  deleteConfirmation,
+} from '@/helpers/confirmation-utils'
+import { getFilename, withMinDelay } from '@/helpers/utils'
 import { copyProductAction } from '../actions/copy-product.action'
 import { updateProductPropAction } from '../actions/update-product-prop.action'
 
@@ -83,8 +86,8 @@ export const columns: ColumnDef<TProductLookupResponseWithSubRows>[] = [
       const fallback = title.slice(0, 2).toUpperCase()
 
       return (
-        <Avatar className="h-10 w-10 rounded-lg grayscale hover:grayscale-0">
-          <AvatarImage src={src} alt={alt} className="object-contain" />
+        <Avatar className="size-10 rounded-lg grayscale hover:grayscale-0">
+          <AvatarImage className="object-contain" src={src} alt={alt} />
           <AvatarFallback className="rounded-lg text-sm">
             {fallback}
           </AvatarFallback>
@@ -482,8 +485,8 @@ export const columns: ColumnDef<TProductLookupResponseWithSubRows>[] = [
       async function handleCopy() {
         const { id, title } = row.original
 
-        if (!confirm(`Are you sure you want to make a copy of ${title}?`))
-          return
+        const confirmed = await copyConfirmation(title)
+        if (!confirmed) return
 
         const copyProductData = { id }
 
@@ -512,12 +515,8 @@ export const columns: ColumnDef<TProductLookupResponseWithSubRows>[] = [
       async function handleDelete() {
         const { id, product_group_id, title, has_draft } = row.original
 
-        if (
-          !confirm(
-            `Are you sure you want to delete ${title}?\nYou won’t be able to undo this action.`,
-          )
-        )
-          return
+        const confirmed = await deleteConfirmation(title)
+        if (!confirmed) return
 
         const deleteProductData = {
           id,
@@ -577,32 +576,6 @@ export const columns: ColumnDef<TProductLookupResponseWithSubRows>[] = [
     meta: { size: 32 },
   },
 ]
-
-type CellBadgeType = React.ComponentProps<typeof Badge>
-function CellBadge({ children, variant, className, ...props }: CellBadgeType) {
-  return (
-    <Badge
-      {...props}
-      variant={variant ?? 'outline'}
-      className={cn('text-muted-foreground px-1.5', className)}
-    >
-      {children}
-    </Badge>
-  )
-}
-
-type CellInputType = React.ComponentProps<typeof Input>
-function CellInput({ className, ...props }: CellInputType) {
-  return (
-    <Input
-      {...props}
-      className={cn(
-        'hover:bg-input/30 focus-visible:bg-background dark:hover:bg-input/30 dark:focus-visible:bg-input/30 h-8 w-full border-transparent bg-transparent shadow-none focus-visible:border dark:bg-transparent',
-        className,
-      )}
-    />
-  )
-}
 
 type ShowToastProps = {
   action: ReturnType<typeof updateProductPropAction>

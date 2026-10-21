@@ -5,7 +5,6 @@ import {
 } from '@tabler/icons-react'
 import { ColumnDef } from '@tanstack/react-table'
 import Link from 'next/link'
-import React from 'react'
 import { toast } from 'sonner'
 
 import { HOME_DIRECTORY } from '@/views/media'
@@ -14,8 +13,12 @@ import { type TPostLookupResponseWithSubRows } from '../view-posts.types'
 
 import { deletePostAction, postErrors } from '../../../shared'
 
+import {
+  CellBadge,
+  NO_SPECIFIED,
+  SPECIFIED_VALUE_FOR_CATEGORIES,
+} from '@/components/data-table'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
-import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Checkbox } from '@/components/ui/checkbox'
 import {
@@ -29,12 +32,8 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from '@/components/ui/tooltip'
-import {
-  NO_SPECIFIED,
-  SPECIFIED_VALUE_FOR_CATEGORIES,
-} from '@/constants/common.constants'
 import { deleteConfirmation } from '@/helpers/confirmation-utils'
-import { cn, getFilename, withMinDelay } from '@/helpers/utils'
+import { getFilename, withMinDelay } from '@/helpers/utils'
 
 type CellStatus = 'Audit' | 'Draft' | 'Published'
 
@@ -80,7 +79,7 @@ export const columns: ColumnDef<TPostLookupResponseWithSubRows>[] = [
       const fallback = title.slice(0, 2).toUpperCase()
 
       return (
-        <Avatar className="h-10 w-10 rounded-lg grayscale hover:grayscale-0">
+        <Avatar className="size-10 rounded-lg grayscale hover:grayscale-0">
           <AvatarImage className="object-contain" src={src} alt={alt} />
           <AvatarFallback className="rounded-lg text-sm">
             {fallback}
@@ -155,17 +154,6 @@ export const columns: ColumnDef<TPostLookupResponseWithSubRows>[] = [
     },
     enableHiding: false,
     meta: { filterVariant: 'text', header: 'Title' },
-  },
-  {
-    accessorKey: 'author_name',
-    id: 'author_name',
-    header: 'Author',
-    cell: ({ row }) =>
-      row.original.author_name ? (
-        <CellBadge>{row.original.author_name}</CellBadge>
-      ) : null,
-    getUniqueValues: row => (row.author_name ? [row.author_name] : []),
-    meta: { filterVariant: 'select', header: 'Brand' },
   },
   {
     accessorFn: row => row.categories.map(({ name }) => name),
@@ -352,16 +340,3 @@ export const columns: ColumnDef<TPostLookupResponseWithSubRows>[] = [
     meta: { size: 32 },
   },
 ]
-
-type CellBadgeType = React.ComponentProps<typeof Badge>
-function CellBadge({ children, variant, className, ...props }: CellBadgeType) {
-  return (
-    <Badge
-      {...props}
-      variant={variant ?? 'outline'}
-      className={cn('text-muted-foreground px-1.5', className)}
-    >
-      {children}
-    </Badge>
-  )
-}

@@ -22,24 +22,22 @@ export function AddViewFeaturesPage() {
     <React.Suspense fallback={<Spinner />}>
       <FeatureAdd categoriesData={categoriesData} />
       <Separator className="my-5" />
-
-      <div>
-        <h1 className="mb-6 font-medium">Features Table</h1>
-
-        {isFeaturesData ? (
+      {isFeaturesData ? (
+        <div>
+          <h1 className="mb-6 font-medium">Features Table</h1>
           <FeaturesTable featuresData={featuresData.features} />
-        ) : (
-          <EmptyView
-            title={
-              !isFeaturesData && featuresData?.errors?.code
-                ? featureErrors[featuresData.errors.code].client
-                : 'Empty Products, Create A New Product.'
-            }
-            featureName="feature"
-            formName="add feature"
-          />
-        )}
-      </div>
+        </div>
+      ) : (
+        <EmptyView
+          title={
+            !isFeaturesData && featuresData?.errors?.code
+              ? featureErrors[featuresData.errors.code].client
+              : 'Empty Products, Create A New Product.'
+          }
+          featureName="feature"
+          formName="add new feature"
+        />
+      )}
     </React.Suspense>
   )
 }

@@ -11,6 +11,7 @@ import {
   guaranteeErrors,
 } from '../../shared'
 
+import { Cell } from '@/components/data-table'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import {
@@ -71,21 +72,25 @@ export const columns: ColumnDef<TGuaranteeLookupResponse>[] = [
     accessorFn: row => row.extra_price,
     id: 'extra_price',
     header: 'Extra Price',
-    cell: ({ row }) => <Cell value={row.original.extra_price} />,
+    cell: ({ row }) => <Cell value={row.original.extra_price.toString()} />,
     meta: { minSize: 96, size: 96, filterVariant: 'range' },
   },
   {
     accessorFn: row => row.target_items.length,
     id: 'stats_product_count',
-    header: 'Items Count',
-    cell: ({ row }) => <Cell value={row.original.target_items.length} />,
+    header: 'Items',
+    cell: ({ row }) => (
+      <Cell value={row.original.target_items.length.toString()} />
+    ),
     meta: { minSize: 70, size: 70, filterVariant: 'range' },
   },
   {
     accessorFn: row => row.extra_duration.length,
     id: 'stats_extra_duration_count',
-    header: 'Options Count',
-    cell: ({ row }) => <Cell value={row.original.extra_duration.length} />,
+    header: 'Options',
+    cell: ({ row }) => (
+      <Cell value={row.original.extra_duration.length.toString()} />
+    ),
     meta: { minSize: 70, size: 70, filterVariant: 'range' },
   },
   {
@@ -201,14 +206,3 @@ export const columns: ColumnDef<TGuaranteeLookupResponse>[] = [
     meta: { size: 32 },
   },
 ]
-
-type CellType = {
-  value: string | number
-}
-function Cell({ value }: CellType) {
-  return (
-    <span className="text-muted-foreground text-xs font-medium text-wrap">
-      {value}
-    </span>
-  )
-}

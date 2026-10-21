@@ -32,7 +32,6 @@ export function AddViewOffersPage() {
         lockedPricesMap={lockedPricesMap}
       />
       <Separator className="my-5" />
-
       {isOffersData ? (
         <div>
           <h1 className="mb-6 font-medium">Offers Table</h1>
@@ -46,7 +45,7 @@ export function AddViewOffersPage() {
               : 'Empty Offers, Create A New Offer.'
           }
           featureName="offer"
-          formName="add offer"
+          formName="add new offer"
         />
       )}
     </React.Suspense>

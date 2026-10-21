@@ -3,4 +3,3 @@ export { queryFeatures } from './queries/query-features'
 
 export * from './feature.errors'
 export * from './feature.types'
-export * from './features.constants'

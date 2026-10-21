@@ -22,24 +22,22 @@ export function AddViewBrandsPage() {
     <React.Suspense fallback={<Spinner />}>
       <AddBrand categoriesData={categoriesData} />
       <Separator className="my-5" />
-
-      <div>
-        <h1 className="mb-6 font-medium">Brands Table</h1>
-
-        {isBrandsData ? (
+      {isBrandsData ? (
+        <div>
+          <h1 className="mb-6 font-medium">Brands Table</h1>
           <BrandsTable brandsData={brandsData.brands} />
-        ) : (
-          <EmptyView
-            title={
-              !isBrandsData && brandsData?.errors?.code
-                ? brandErrors[brandsData.errors.code].client
-                : ''
-            }
-            featureName="brand"
-            formName="add brand"
-          />
-        )}
-      </div>
+        </div>
+      ) : (
+        <EmptyView
+          title={
+            !isBrandsData && brandsData?.errors?.code
+              ? brandErrors[brandsData.errors.code].client
+              : ''
+          }
+          featureName="brand"
+          formName="add new brand"
+        />
+      )}
     </React.Suspense>
   )
 }

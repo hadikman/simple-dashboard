@@ -1,17 +1,20 @@
 import { IconDotsVertical } from '@tabler/icons-react'
 import { ColumnDef } from '@tanstack/react-table'
 import Link from 'next/link'
-import React from 'react'
 import { toast } from 'sonner'
 
 import {
   type TFeatureLookupResponse,
   type TFeatureStatus,
   featureErrors,
-  SPECIFIED_LABEL_FOR_APP_CAT,
 } from '../../shared'
 
-import { Badge } from '@/components/ui/badge'
+import {
+  Cell,
+  CellBadge,
+  NO_SPECIFIED,
+  SPECIFIED_LABEL_FOR_APP_CAT,
+} from '@/components/data-table'
 import { Button } from '@/components/ui/button'
 import {
   DropdownMenu,
@@ -19,9 +22,8 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
-import { NO_SPECIFIED } from '@/constants/common.constants'
 import { deleteConfirmation } from '@/helpers/confirmation-utils'
-import { cn, withMinDelay } from '@/helpers/utils'
+import { withMinDelay } from '@/helpers/utils'
 import { deleteFeatureAction } from './delete-feature.action'
 
 export const columns: ColumnDef<TFeatureLookupResponse>[] = [
@@ -53,8 +55,8 @@ export const columns: ColumnDef<TFeatureLookupResponse>[] = [
   {
     accessorFn: row => row.values.length,
     id: 'values_count',
-    header: 'Count',
-    cell: ({ row }) => <Cell value={row.original.values.length} />,
+    header: 'Items',
+    cell: ({ row }) => <Cell value={row.original.values.length.toString()} />,
     meta: { minSize: 70, size: 70, header: 'Count' },
   },
   {
@@ -110,7 +112,7 @@ export const columns: ColumnDef<TFeatureLookupResponse>[] = [
     accessorKey: 'display_order',
     id: 'display_order',
     header: 'Display Order',
-    cell: ({ row }) => <Cell value={row.original.display_order} />,
+    cell: ({ row }) => <Cell value={row.original.display_order.toString()} />,
     meta: { minSize: 120, size: 120, header: 'Display Order' },
   },
   {
@@ -249,27 +251,3 @@ export const columns: ColumnDef<TFeatureLookupResponse>[] = [
     meta: { size: 32 },
   },
 ]
-
-type CellType = {
-  value: string | number
-}
-function Cell({ value }: CellType) {
-  return (
-    <span className="text-muted-foreground text-xs font-medium text-wrap">
-      {value}
-    </span>
-  )
-}
-
-type CellBadgeType = React.ComponentProps<typeof Badge>
-function CellBadge({ children, variant, className, ...props }: CellBadgeType) {
-  return (
-    <Badge
-      {...props}
-      variant={variant ?? 'outline'}
-      className={cn('text-muted-foreground px-1.5', className)}
-    >
-      {children}
-    </Badge>
-  )
-}

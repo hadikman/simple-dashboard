@@ -28,7 +28,7 @@ export function ViewProductsPage() {
             : 'Empty Products, Create A New Product.'
         }
         featureName="product"
-        formName="new product"
+        formName="add new product"
       />
     )
   }

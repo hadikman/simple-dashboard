@@ -36,7 +36,6 @@ export function AddViewGuaranteesPage() {
         lockedPricesMap={lockedPricesMap}
       />
       <Separator className="my-5" />
-
       {isGuaranteesData ? (
         <div>
           <h1 className="mb-6 font-medium">Guarantees Table</h1>
@@ -50,7 +49,7 @@ export function AddViewGuaranteesPage() {
               : 'Empty Guarantees, Create A New Guarantee.'
           }
           featureName="guarantee"
-          formName="add guarantee"
+          formName="add new guarantee"
         />
       )}
     </React.Suspense>

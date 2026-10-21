@@ -1,15 +1,19 @@
 import { IconDotsVertical } from '@tabler/icons-react'
 import { ColumnDef } from '@tanstack/react-table'
 import Link from 'next/link'
-import React from 'react'
 import { toast } from 'sonner'
 
 import { HOME_DIRECTORY } from '@/views/media'
 
 import { type TBrandLookupResponse, brandErrors } from '../../shared'
 
+import {
+  Cell,
+  CellBadge,
+  NO_SPECIFIED,
+  SPECIFIED_VALUE_FOR_CATEGORIES,
+} from '@/components/data-table'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
-import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import {
   DropdownMenu,
@@ -17,12 +21,8 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
-import {
-  NO_SPECIFIED,
-  SPECIFIED_VALUE_FOR_CATEGORIES,
-} from '@/constants/common.constants'
 import { deleteConfirmation } from '@/helpers/confirmation-utils'
-import { cn, getFilename, withMinDelay } from '@/helpers/utils'
+import { getFilename, withMinDelay } from '@/helpers/utils'
 import { deleteBrandAction } from './delete-brand.action'
 
 export const columns: ColumnDef<TBrandLookupResponse>[] = [
@@ -40,7 +40,7 @@ export const columns: ColumnDef<TBrandLookupResponse>[] = [
 
       return (
         // If margin start need to change, it must change into first th into thead too
-        <Avatar className="ms-1 h-10 w-10 rounded-lg grayscale hover:grayscale-0">
+        <Avatar className="ms-1 size-10 rounded-lg grayscale hover:grayscale-0">
           <AvatarImage className="object-contain" src={src} alt={alt} />
           <AvatarFallback className="rounded-lg text-sm">
             {fallback}
@@ -149,22 +149,28 @@ export const columns: ColumnDef<TBrandLookupResponse>[] = [
   {
     accessorFn: row => row.stats.product_count,
     id: 'stats_product_count',
-    header: 'Product Count',
-    cell: ({ row }) => row.original.stats.product_count,
+    header: 'Products',
+    cell: ({ row }) => (
+      <Cell value={row.original.stats.product_count.toString()} />
+    ),
     meta: { filterVariant: 'range' },
   },
   {
     accessorFn: row => row.stats.total_sales,
     id: 'stats_total_sales',
     header: 'Total Sales',
-    cell: ({ row }) => row.original.stats.total_sales,
+    cell: ({ row }) => (
+      <Cell value={row.original.stats.total_sales.toString()} />
+    ),
     meta: { filterVariant: 'range' },
   },
   {
     accessorFn: row => row.stats.average_rating,
     id: 'stats_average_rating',
     header: 'Average Rating',
-    cell: ({ row }) => row.original.stats.average_rating,
+    cell: ({ row }) => (
+      <Cell value={row.original.stats.average_rating.toString()} />
+    ),
     meta: { filterVariant: 'range' },
   },
   {
@@ -254,27 +260,3 @@ export const columns: ColumnDef<TBrandLookupResponse>[] = [
     meta: { size: 32 },
   },
 ]
-
-type CellType = {
-  value: string
-}
-function Cell({ value }: CellType) {
-  return (
-    <span className="text-muted-foreground text-xs font-medium text-wrap">
-      {value}
-    </span>
-  )
-}
-
-type CellBadgeType = React.ComponentProps<typeof Badge>
-function CellBadge({ children, variant, className, ...props }: CellBadgeType) {
-  return (
-    <Badge
-      {...props}
-      variant={variant ?? 'outline'}
-      className={cn('text-muted-foreground px-1.5', className)}
-    >
-      {children}
-    </Badge>
-  )
-}

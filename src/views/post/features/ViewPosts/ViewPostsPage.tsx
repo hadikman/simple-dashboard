@@ -25,7 +25,7 @@ export function ViewPostsPage() {
             : ''
         }
         featureName="post"
-        formName="new post"
+        formName="add new post"
       />
     )
   }
