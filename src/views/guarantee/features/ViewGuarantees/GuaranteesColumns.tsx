@@ -138,6 +138,7 @@ export const columns: ColumnDef<TGuaranteeLookupResponse>[] = [
     cell: ({ row }) => {
       const { created_at } = row.original
       if (!created_at) return
+
       const date = formatLocalDateTime(created_at, 'date')
       const time = formatLocalDateTime(created_at, 'time')
 

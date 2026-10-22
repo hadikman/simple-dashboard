@@ -33,7 +33,7 @@ import {
   TooltipTrigger,
 } from '@/components/ui/tooltip'
 import { deleteConfirmation } from '@/helpers/confirmation-utils'
-import { getFilename, withMinDelay } from '@/helpers/utils'
+import { formatLocalDateTime, getFilename, withMinDelay } from '@/helpers/utils'
 
 type CellStatus = 'Audit' | 'Draft' | 'Published'
 
@@ -255,17 +255,8 @@ export const columns: ColumnDef<TPostLookupResponseWithSubRows>[] = [
       const { published_at } = row.original
       if (!published_at) return
 
-      const publishedAt = published_at
-      const date = publishedAt.toLocaleDateString('en-US', {
-        year: '2-digit',
-        month: '2-digit',
-        day: '2-digit',
-      })
-      const time = publishedAt.toLocaleTimeString('en-US', {
-        hour: '2-digit',
-        minute: '2-digit',
-        hour12: false,
-      })
+      const date = formatLocalDateTime(published_at, 'date')
+      const time = formatLocalDateTime(published_at, 'time')
 
       return (
         <span className="text-muted-foreground inline-grid gap-0.5 text-center text-xs">

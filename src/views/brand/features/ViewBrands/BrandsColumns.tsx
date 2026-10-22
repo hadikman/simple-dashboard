@@ -22,7 +22,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
 import { deleteConfirmation } from '@/helpers/confirmation-utils'
-import { getFilename, withMinDelay } from '@/helpers/utils'
+import { formatLocalDateTime, getFilename, withMinDelay } from '@/helpers/utils'
 import { deleteBrandAction } from './delete-brand.action'
 
 export const columns: ColumnDef<TBrandLookupResponse>[] = [
@@ -181,17 +181,8 @@ export const columns: ColumnDef<TBrandLookupResponse>[] = [
       const { created_at } = row.original
       if (!created_at) return
 
-      const createdAt = created_at
-      const date = createdAt.toLocaleDateString('en-US', {
-        year: '2-digit',
-        month: '2-digit',
-        day: '2-digit',
-      })
-      const time = createdAt.toLocaleTimeString('en-US', {
-        hour: '2-digit',
-        minute: '2-digit',
-        hour12: false,
-      })
+      const date = formatLocalDateTime(created_at, 'date')
+      const time = formatLocalDateTime(created_at, 'time')
 
       return (
         <span className="text-muted-foreground inline-grid gap-0.5 text-center text-xs">
