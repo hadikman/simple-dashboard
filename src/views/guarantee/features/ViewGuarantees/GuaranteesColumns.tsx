@@ -139,8 +139,8 @@ export const columns: ColumnDef<TGuaranteeLookupResponse>[] = [
       const { created_at } = row.original
       if (!created_at) return
 
-      const date = formatLocalDateTime(created_at, 'date')
-      const time = formatLocalDateTime(created_at, 'time')
+      const date = formatLocalDateTime({ date: created_at, type: 'date' })
+      const time = formatLocalDateTime({ date: created_at, type: 'time' })
 
       return (
         <span className="text-muted-foreground inline-grid gap-0.5 text-center text-xs">

@@ -3,7 +3,6 @@
 import { ChevronDownIcon } from 'lucide-react'
 import React from 'react'
 
-import { getDateWithOffset } from '@/helpers/utils'
 import { Button } from './ui/button'
 import { Calendar } from './ui/calendar'
 import {
@@ -54,7 +53,7 @@ function DateTimeRangePicker({
   const selectedValue = value && typeof value !== 'string' ? value : undefined
 
   function handleOnSelect(date: Date | undefined) {
-    onSelectedDate(date ? getDateWithOffset(date) : '') // Return '' instead of undefined
+    onSelectedDate(date ? date : '') // Return '' instead of undefined
     setOpen(false)
   }
 

@@ -78,7 +78,7 @@ export type TUploadFilesResponse =
             fileUrl: string
             size: number
             type: string
-            uploadedAt: string
+            uploadedAt: Date
           }
         | string
     }

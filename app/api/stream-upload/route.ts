@@ -6,7 +6,6 @@ import path from 'path'
 import { Readable } from 'stream'
 import { pipeline } from 'stream/promises'
 
-import { generateId } from '@/helpers/utils'
 import {
   getFileTypeFromExtension,
   mediaErrors,
@@ -22,6 +21,8 @@ import {
   THUMBNAIL_DIR,
   UPLOAD_DIR,
 } from '@/views/media/server'
+
+import { generateId, getCurrentUTCDate } from '@/helpers/utils'
 
 export async function POST(
   req: NextRequest,
@@ -113,7 +114,7 @@ export async function POST(
             fileUrl: `/assets/${path.basename(finalFilePath)}`,
             size,
             type: mime,
-            uploadedAt: new Date().toISOString(),
+            uploadedAt: getCurrentUTCDate(),
           },
         }),
       )

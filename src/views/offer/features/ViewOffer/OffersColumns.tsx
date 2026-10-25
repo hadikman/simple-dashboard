@@ -112,8 +112,16 @@ export const columns: ColumnDef<TOfferLookupResponse>[] = [
     cell: ({ row }) => {
       const { offer_start } = row.original
       // Use UTC for showing universal timezone
-      const date = formatLocalDateTime(offer_start, 'date', 'UTC')
-      const time = formatLocalDateTime(offer_start, 'time', 'UTC')
+      const date = formatLocalDateTime({
+        date: offer_start,
+        type: 'date',
+        timezone: 'UTC',
+      })
+      const time = formatLocalDateTime({
+        date: offer_start,
+        type: 'time',
+        timezone: 'UTC',
+      })
 
       return (
         <span className="text-muted-foreground inline-grid gap-0.5 text-center text-xs">
@@ -123,14 +131,18 @@ export const columns: ColumnDef<TOfferLookupResponse>[] = [
       )
     },
     getUniqueValues: row => [
-      formatLocalDateTime(row.offer_start, 'date', 'UTC'),
+      formatLocalDateTime({
+        date: row.offer_start,
+        type: 'date',
+        timezone: 'UTC',
+      }),
     ],
     filterFn: (row, columnId, filterValue) => {
-      const rowValue = formatLocalDateTime(
-        row.getValue(columnId) as Date,
-        'date',
-        'UTC',
-      )
+      const rowValue = formatLocalDateTime({
+        date: row.getValue(columnId) as Date,
+        type: 'date',
+        timezone: 'UTC',
+      })
       return rowValue === filterValue
     },
     meta: { size: 48, filterVariant: 'select' },
@@ -142,8 +154,16 @@ export const columns: ColumnDef<TOfferLookupResponse>[] = [
     cell: ({ row }) => {
       const { offer_end } = row.original
       // Use UTC for showing universal timezone
-      const date = formatLocalDateTime(offer_end, 'date', 'UTC')
-      const time = formatLocalDateTime(offer_end, 'time', 'UTC')
+      const date = formatLocalDateTime({
+        date: offer_end,
+        type: 'date',
+        timezone: 'UTC',
+      })
+      const time = formatLocalDateTime({
+        date: offer_end,
+        type: 'time',
+        timezone: 'UTC',
+      })
 
       return (
         <span className="text-muted-foreground inline-grid gap-0.5 text-center text-xs">
@@ -152,13 +172,19 @@ export const columns: ColumnDef<TOfferLookupResponse>[] = [
         </span>
       )
     },
-    getUniqueValues: row => [formatLocalDateTime(row.offer_end, 'date', 'UTC')],
+    getUniqueValues: row => [
+      formatLocalDateTime({
+        date: row.offer_end,
+        type: 'date',
+        timezone: 'UTC',
+      }),
+    ],
     filterFn: (row, columnId, filterValue) => {
-      const rowValue = formatLocalDateTime(
-        row.getValue(columnId) as Date,
-        'date',
-        'UTC',
-      )
+      const rowValue = formatLocalDateTime({
+        date: row.getValue(columnId) as Date,
+        type: 'date',
+        timezone: 'UTC',
+      })
       return rowValue === filterValue
     },
     meta: { size: 48, filterVariant: 'select' },
@@ -178,8 +204,8 @@ export const columns: ColumnDef<TOfferLookupResponse>[] = [
       const { created_at } = row.original
       if (!created_at) return
       // Didn't use UTC for showing local timezone
-      const date = formatLocalDateTime(created_at, 'date')
-      const time = formatLocalDateTime(created_at, 'time')
+      const date = formatLocalDateTime({ date: created_at, type: 'date' })
+      const time = formatLocalDateTime({ date: created_at, type: 'time' })
 
       return (
         <span className="text-muted-foreground inline-grid gap-0.5 text-center text-xs">

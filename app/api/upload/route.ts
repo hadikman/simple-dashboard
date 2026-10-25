@@ -19,6 +19,8 @@ import {
   UPLOAD_DIR,
 } from '@/views/media/server'
 
+import { getCurrentUTCDate } from '@/helpers/utils'
+
 export async function POST(
   request: NextRequest,
 ): Promise<NextResponse<TUploadFilesResponse>> {
@@ -73,7 +75,7 @@ export async function POST(
         fileUrl: `/assets/${finalFilename}`,
         size: file.size,
         type: file.type,
-        uploadedAt: new Date().toISOString(),
+        uploadedAt: getCurrentUTCDate(),
       },
     })
     // eslint-disable-next-line @typescript-eslint/no-explicit-any

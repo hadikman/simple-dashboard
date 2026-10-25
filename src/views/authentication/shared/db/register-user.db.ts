@@ -9,7 +9,7 @@ import {
 } from '../../shared'
 
 import { mongoManager } from '@/config/db/MongoManager'
-import { hashPassword } from '@/helpers/utils'
+import { getCurrentUTCDate, hashPassword } from '@/helpers/utils'
 
 export async function registerUser(
   newUser: TRegisterUserData,
@@ -40,6 +40,8 @@ export async function registerUser(
     email_notifications: true,
   }
 
+  const currentUTCDate = getCurrentUTCDate()
+
   const newUserDoc: IUserDocument = {
     schema_version: 1,
     username: newUser.username,
@@ -49,8 +51,8 @@ export async function registerUser(
     role: 'admin',
     status: 'active',
     preferences,
-    created_at: new Date(new Date().toISOString()),
-    updated_at: new Date(new Date().toISOString()),
+    created_at: currentUTCDate,
+    updated_at: currentUTCDate,
     last_login: null,
   }
 

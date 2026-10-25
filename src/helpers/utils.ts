@@ -48,35 +48,6 @@ export function normalizeSlug(value: string) {
 }
 
 /**
- * Returns a date normalized to UTC by removing the local timezone offset.
- *
- * This function creates a Date object that represents the same UTC time
- * as the input date, but without the local timezone offset applied.
- * When no date is provided, it uses the current date and time.
- *
- * @example
- * // If local timezone is UTC-5 (Eastern Standard Time)
- * const date = new Date('2023-12-25T10:00:00');
- * // getDateWithOffset(date) returns a Date representing '2023-12-25T15:00:00.000Z'
- *
- * @param {Date} [date] - Optional Date object to normalize. If omitted, uses current date/time.
- * @returns {Date} A new Date object normalized to UTC by removing local timezone offset.
- *
- * @remarks
- * Useful for:
- * - Storing dates in UTC format in databases
- * - Ensuring consistent date comparisons across timezones
- * - Displaying dates without local timezone interference
- * - Creating timezone-agnostic date representations
- */
-export function getDateWithOffset(date?: Date): Date {
-  if (date) {
-    return new Date(date.getTime() - date.getTimezoneOffset() * 60000)
-  }
-  return new Date(Date.now() - new Date().getTimezoneOffset() * 60000)
-}
-
-/**
  * Creates a promise that resolves after a specified delay.
  *
  * @param {number} ms - Delay duration in milliseconds
@@ -218,6 +189,36 @@ export function getCurrentUTCDate(): Date {
 }
 
 /**
+ * Returns the runtime's IANA timezone identifier.
+ *
+ * Uses `Intl.DateTimeFormat().resolvedOptions().timeZone`, which yields the
+ * default timezone of the current JavaScript runtime — e.g. `"America/New_York"`,
+ * `"Europe/London"`, or `"Asia/Tokyo"`.
+ *
+ * ⚠️ Client vs. server:
+ * - In the **browser**, this returns the end user's system timezone (the
+ *   intended use case).
+ * - In **Node.js / SSR**, `Intl` is fully supported, but this returns the
+ *   **server's** timezone (commonly `"UTC"`), *not* the visiting user's.
+ *   Calling it in a Server Component or Server Action will therefore produce
+ *   a value that is wrong for multi-region users. Detect the timezone on the
+ *   client and pass it to the server (e.g. via a cookie or form field) instead.
+ *
+ * @returns The IANA timezone identifier of the current runtime, e.g. `"Asia/Shanghai"`.
+ *
+ * @example
+ * // Client Component — gets the user's timezone
+ * const tz = getUserTimezone() // "Europe/Berlin"
+ *
+ * @example
+ * // Pass it to your formatter
+ * formatLocalDateTime({ date, type: 'date', timezone: getUserTimezone() })
+ */
+export function getUserTimezone(): string {
+  return Intl.DateTimeFormat().resolvedOptions().timeZone
+}
+
+/**
  * Gets a UTC date offset by a specified number of days from the current date or a reference date.
  *
  * @param {number} [days=1] - Number of days to add (positive) or subtract (negative).
@@ -251,33 +252,57 @@ export function getUTCDateOffset(
 }
 
 /**
- * Formats a date to a localized date/time string.
+ * Formats a `Date` into a localized date or time string using `Intl` APIs.
  *
- * @param date - The date object to format
- * @param type - The format type: 'date' for MM/DD/YY or 'time' for HH:MM:SS AM/PM
- * @param [timezone] - Optional IANA timezone string. Defaults to system local timezone
- * @returns A formatted date or time string
+ * By default, formatting uses the runtime's locale and local timezone. Pass
+ * `locale` and/or `timezone` explicitly when the output must be deterministic
+ * or aligned with a specific user's region (e.g., in server-side rendering
+ * or when displaying times across multiple countries).
+ *
+ * @param params - Formatting options.
+ * @param params.date - The date object to format.
+ * @param params.locale - A BCP 47 language tag (or array of tags) used to
+ *   determine the output format, e.g. `"en-US"`, `"en-GB"`, or `"de-DE"`.
+ *   Defaults to the runtime's locale.
+ * @param params.type - The format type:
+ *   - `'date'` → numeric year, month, day (order depends on `locale`)
+ *   - `'time'` → 2-digit hour, minute, second with day period
+ * @param params.timezone - An IANA timezone identifier, e.g. `"UTC"`,
+ *   `"Asia/Tokyo"`, `"America/New_York"`. Defaults to the runtime's local
+ *   timezone.
+ * @returns A localized date or time string, depending on `type`.
  *
  * @example
- * // Get date in UTC
- * formatLocalDateTime(new Date(), 'date', 'UTC')
- * // Returns: "08/25/26"
+ * // Date in UTC, US format
+ * formatLocalDateTime({ date: new Date(), type: 'date', timezone: 'UTC', locale: 'en-US' })
+ * // → "08/25/26"
  *
  * @example
- * // Get time in local timezone
- * formatLocalDateTime(new Date(), 'time')
- * // Returns: "10:30:00 AM" (in local time)
+ * // Time in the runtime's local timezone and locale
+ * formatLocalDateTime({ date: new Date(), type: 'time' })
+ * // → "10:30:00 AM" (locale/timezone dependent)
  *
  * @example
- * // Get time in Tokyo
- * formatLocalDateTime(new Date(), 'time', 'Asia/Tokyo')
- * // Returns: "11:30:00 PM"
+ * // Time in Tokyo, Japanese locale
+ * formatLocalDateTime({ date: new Date(), type: 'time', timezone: 'Asia/Tokyo', locale: 'ja-JP' })
+ * // → "23:30:00"
+ *
+ * @example
+ * // Date in the UK format
+ * formatLocalDateTime({ date: new Date(), type: 'date', locale: 'en-GB', timezone: 'Europe/London' })
+ * // → "25/08/26"
  */
-export function formatLocalDateTime(
-  date: Date,
-  type: 'date' | 'time',
-  timezone?: Intl.DateTimeFormatOptions['timeZone'],
-) {
+export function formatLocalDateTime({
+  date,
+  locale,
+  type,
+  timezone,
+}: {
+  date: Date
+  locale?: Intl.LocalesArgument
+  type: 'date' | 'time'
+  timezone?: Intl.DateTimeFormatOptions['timeZone']
+}) {
   const options: Intl.DateTimeFormatOptions = {
     timeZone: timezone,
     ...(type === 'date'
@@ -286,8 +311,8 @@ export function formatLocalDateTime(
   }
 
   return type === 'date'
-    ? date.toLocaleDateString('en-US', options)
-    : date.toLocaleTimeString('en-US', options)
+    ? date.toLocaleDateString(locale, options)
+    : date.toLocaleTimeString(locale, options)
 }
 
 /**

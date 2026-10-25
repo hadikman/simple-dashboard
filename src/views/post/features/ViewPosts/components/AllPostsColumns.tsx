@@ -255,8 +255,8 @@ export const columns: ColumnDef<TPostLookupResponseWithSubRows>[] = [
       const { published_at } = row.original
       if (!published_at) return
 
-      const date = formatLocalDateTime(published_at, 'date')
-      const time = formatLocalDateTime(published_at, 'time')
+      const date = formatLocalDateTime({ date: published_at, type: 'date' })
+      const time = formatLocalDateTime({ date: published_at, type: 'time' })
 
       return (
         <span className="text-muted-foreground inline-grid gap-0.5 text-center text-xs">
