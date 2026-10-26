@@ -5,13 +5,14 @@ import {
   featureErrors,
 } from '../'
 
-import { mongoManager } from '@/config/db/MongoManager'
+import { COLLECTIONS, mongoManager } from '@/config/db'
 
 export async function checkDuplicateFeature(
   queryDuplicateFeaturePropData: TQueryDuplicateFeaturePropData,
 ): Promise<TCheckDuplicateFeatureResponse> {
-  const db = await mongoManager.getConnectedDatabase()
-  const collection = db.collection<IFeatureDocument>(mongoManager.FEATURES_COLL)
+  const collection = await mongoManager.getCollection<IFeatureDocument>(
+    COLLECTIONS.FEATURES,
+  )
 
   const { key, value } = queryDuplicateFeaturePropData
 

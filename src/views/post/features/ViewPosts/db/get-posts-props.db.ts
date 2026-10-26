@@ -9,21 +9,18 @@ import {
   type TQueryPostsPropsData,
 } from '../../../shared'
 
-import { mongoManager } from '@/config/db/MongoManager'
+import { COLLECTIONS, mongoManager } from '@/config/db'
 
 export async function getPostsProps<
   T extends Partial<Record<keyof IPostDocument, unknown>>,
 >(
   getPostsPropsData: TQueryPostsPropsData<T>,
 ): Promise<TGetPostsPropsResponse<T>> {
-  const db = await mongoManager.getConnectedDatabase()
   const { keys, type } = getPostsPropsData
   const isDraftMode = type === 'draft'
-  const selectedColl = isDraftMode
-    ? mongoManager.POSTS_DRAFT_COLL
-    : mongoManager.POSTS_COLL
-  const collection = db.collection<IPostDocument>(selectedColl)
-
+  const selectedColl = isDraftMode ? COLLECTIONS.POSTS_DRAFT : COLLECTIONS.POSTS
+  const collection =
+    await mongoManager.getCollection<IPostDocument>(selectedColl)
   const cursor = collection.find()
   const projectCursor = cursor.project<T & { _id: ObjectId }>(keys)
   const data = await projectCursor.toArray()

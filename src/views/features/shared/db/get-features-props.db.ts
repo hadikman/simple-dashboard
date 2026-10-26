@@ -8,13 +8,14 @@ import {
   featureErrors,
 } from '../'
 
-import { mongoManager } from '@/config/db/MongoManager'
+import { COLLECTIONS, mongoManager } from '@/config/db'
 
 export async function getFeaturesProps<
   T extends Partial<Record<keyof IFeatureDocument, unknown>>,
 >(keys: ProjectionKeys<T>): Promise<TGetFeaturesPropsResponse<T>> {
-  const db = await mongoManager.getConnectedDatabase()
-  const collection = db.collection<IFeatureDocument>(mongoManager.FEATURES_COLL)
+  const collection = await mongoManager.getCollection<IFeatureDocument>(
+    COLLECTIONS.FEATURES,
+  )
 
   const cursor = collection.find()
   const projectCursor = cursor.project<T & { _id: ObjectId }>(keys)

@@ -9,7 +9,7 @@ import {
   featureErrors,
 } from '../../shared'
 
-import { mongoManager } from '@/config/db/MongoManager'
+import { COLLECTIONS, mongoManager } from '@/config/db'
 
 type LookedupObjectIds = { _id: ObjectId }
 type LookedupIds = { id: string }
@@ -17,15 +17,14 @@ type LookedupIds = { id: string }
 export async function deleteFeature(
   deleteFeatureData: TDeleteFeatureData,
 ): Promise<TDeleteFeatureResponse> {
-  const db = await mongoManager.getConnectedDatabase()
-  const featuresColl = db.collection<IFeatureDocument>(
-    mongoManager.FEATURES_COLL,
+  const featuresColl = await mongoManager.getCollection<IFeatureDocument>(
+    COLLECTIONS.FEATURES,
   )
-  const productsColl = db.collection<IProductDocument>(
-    mongoManager.PRODUCTS_COLL,
+  const productsColl = await mongoManager.getCollection<IProductDocument>(
+    COLLECTIONS.PRODUCTS,
   )
-  const productsDraftColl = db.collection<IProductDocument>(
-    mongoManager.PRODUCTS_DRAFT_COLL,
+  const productsDraftColl = await mongoManager.getCollection<IProductDocument>(
+    COLLECTIONS.PRODUCTS_DRAFT,
   )
   const { id, name } = deleteFeatureData
 
@@ -58,7 +57,7 @@ export async function deleteFeature(
       },
       {
         $lookup: {
-          from: mongoManager.PRODUCTS_COLL,
+          from: COLLECTIONS.PRODUCTS,
           localField: 'product_group_id',
           foreignField: 'product_group_id',
           pipeline: [{ $project: { _id: 1 } }],

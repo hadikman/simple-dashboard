@@ -9,20 +9,19 @@ import {
   guaranteeErrors,
 } from '../../shared'
 
-import { mongoManager } from '@/config/db/MongoManager'
+import { COLLECTIONS, mongoManager } from '@/config/db'
 
 export async function deleteGuarantee(
   deleteGuaranteeData: TDeleteGuaranteeData,
 ): Promise<TDeleteGuaranteeResponse> {
-  const db = await mongoManager.getConnectedDatabase()
-  const guaranteesColl = db.collection<IGuaranteeDocument>(
-    mongoManager.GUARANTEES_COLL,
+  const guaranteesColl = await mongoManager.getCollection<IGuaranteeDocument>(
+    COLLECTIONS.GUARANTEES,
   )
-  const productsColl = db.collection<IProductDocument>(
-    mongoManager.PRODUCTS_COLL,
+  const productsColl = await mongoManager.getCollection<IProductDocument>(
+    COLLECTIONS.PRODUCTS,
   )
-  const productsDraftColl = db.collection<IProductDocument>(
-    mongoManager.PRODUCTS_DRAFT_COLL,
+  const productsDraftColl = await mongoManager.getCollection<IProductDocument>(
+    COLLECTIONS.PRODUCTS_DRAFT,
   )
 
   const { id, name } = deleteGuaranteeData

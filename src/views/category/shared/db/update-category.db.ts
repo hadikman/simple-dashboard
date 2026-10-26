@@ -7,15 +7,14 @@ import {
   categoryErrors,
 } from '../'
 
-import { mongoManager } from '@/config/db/MongoManager'
+import { COLLECTIONS, mongoManager } from '@/config/db'
 
 export async function updateCategory(
   updateCategoryData: TUpdateCategoryData,
 ): Promise<TUpdateCategoryResponse> {
-  const db = await mongoManager.getConnectedDatabase()
   const { category_group, id, name, newName, parentId } = updateCategoryData
-  const collection = db.collection<ICategoryDocument>(
-    mongoManager.CATEGORY_COLL,
+  const collection = await mongoManager.getCollection<ICategoryDocument>(
+    COLLECTIONS.CATEGORY,
   )
 
   const objectId = new ObjectId(id)

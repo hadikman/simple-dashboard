@@ -7,14 +7,15 @@ import {
   brandErrors,
 } from '../../shared'
 
-import { mongoManager } from '@/config/db/MongoManager'
+import { COLLECTIONS, mongoManager } from '@/config/db'
 import { getCurrentUTCDate } from '@/helpers/utils'
 
 export async function addBrand(
   brandData: TBrandData,
 ): Promise<TAddBrandResponse> {
-  const db = await mongoManager.getConnectedDatabase()
-  const collection = db.collection<IBrandDocument>(mongoManager.BRANDS_COLL)
+  const collection = await mongoManager.getCollection<IBrandDocument>(
+    COLLECTIONS.BRANDS,
+  )
 
   const existingBrand = await collection.findOne({
     $or: [{ name: brandData.name }, { slug: brandData.slug }],

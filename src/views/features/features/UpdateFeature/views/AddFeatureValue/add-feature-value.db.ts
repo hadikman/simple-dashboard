@@ -7,13 +7,14 @@ import {
   featureErrors,
 } from '../../../../shared'
 
-import { mongoManager } from '@/config/db/MongoManager'
+import { COLLECTIONS, mongoManager } from '@/config/db'
 
 export async function addFeatureValue(
   featureValueData: TFeatureValueData,
 ): Promise<TAddFeatureValueResponse> {
-  const db = await mongoManager.getConnectedDatabase()
-  const collection = db.collection<IFeatureDocument>(mongoManager.FEATURES_COLL)
+  const collection = await mongoManager.getCollection<IFeatureDocument>(
+    COLLECTIONS.FEATURES,
+  )
   const { featureId, value } = featureValueData
 
   const objectId = new ObjectId(featureId)

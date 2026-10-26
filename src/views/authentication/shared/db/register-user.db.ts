@@ -8,14 +8,15 @@ import {
   userErrors,
 } from '../../shared'
 
-import { mongoManager } from '@/config/db/MongoManager'
+import { COLLECTIONS, mongoManager } from '@/config/db'
 import { getCurrentUTCDate, hashPassword } from '@/helpers/utils'
 
 export async function registerUser(
   newUser: TRegisterUserData,
 ): Promise<TRegisterUserResponse> {
-  const db = await mongoManager.getConnectedDatabase()
-  const collection = db.collection<IUserDocument>(mongoManager.USERS_COLL)
+  const collection = await mongoManager.getCollection<IUserDocument>(
+    COLLECTIONS.USERS,
+  )
 
   const existingUser = await collection.findOne({
     $or: [{ email: newUser.email }, { username: newUser.username }],

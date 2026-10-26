@@ -8,14 +8,13 @@ import {
   guaranteeErrors,
 } from '../'
 
-import { mongoManager } from '@/config/db/MongoManager'
+import { COLLECTIONS, mongoManager } from '@/config/db'
 
 export async function getGuaranteesProps<
   T extends Partial<Record<keyof IGuaranteeDocument, unknown>>,
 >(keys: ProjectionKeys<T>): Promise<TGetGuaranteesPropsResponse<T>> {
-  const db = await mongoManager.getConnectedDatabase()
-  const collection = db.collection<IGuaranteeDocument>(
-    mongoManager.GUARANTEES_COLL,
+  const collection = await mongoManager.getCollection<IGuaranteeDocument>(
+    COLLECTIONS.GUARANTEES,
   )
 
   const cursor = collection.find()

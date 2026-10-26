@@ -6,13 +6,14 @@ import {
 } from '../../shared'
 import { getPublishedSlugCached } from '../../shared/server'
 
-import { mongoManager } from '@/config/db/MongoManager'
+import { COLLECTIONS, mongoManager } from '@/config/db'
 
 export async function checkDuplicatePost(
   checkDuplicatePostData: TQueryDuplicatePostData,
 ): Promise<TCheckDuplicatePostResponse> {
-  const db = await mongoManager.getConnectedDatabase()
-  const collection = db.collection<IPostDocument>(mongoManager.POSTS_COLL)
+  const collection = await mongoManager.getCollection<IPostDocument>(
+    COLLECTIONS.POSTS,
+  )
   const { slug, postGroupId } = checkDuplicatePostData
   let existingSlugPost = null,
     publishedSlug = null

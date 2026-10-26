@@ -9,20 +9,20 @@ import {
   productErrors,
 } from '../'
 
-import { mongoManager } from '@/config/db/MongoManager'
+import { COLLECTIONS, mongoManager } from '@/config/db'
 
 export async function getProductsProps<
   T extends Partial<Record<keyof IProductDocument, unknown>>,
 >(
   getProductsPropsData: TQueryProductsPropsData<T>,
 ): Promise<TGetProductsPropsResponse<T>> {
-  const db = await mongoManager.getConnectedDatabase()
   const { keys, type } = getProductsPropsData
   const isDraftMode = type === 'draft'
   const selectedColl = isDraftMode
-    ? mongoManager.PRODUCTS_DRAFT_COLL
-    : mongoManager.PRODUCTS_COLL
-  const collection = db.collection<IProductDocument>(selectedColl)
+    ? COLLECTIONS.PRODUCTS_DRAFT
+    : COLLECTIONS.PRODUCTS
+  const collection =
+    await mongoManager.getCollection<IProductDocument>(selectedColl)
 
   const cursor = collection.find()
   const projectCursor = cursor.project<T & { _id: ObjectId }>(keys)

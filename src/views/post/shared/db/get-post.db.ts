@@ -7,18 +7,16 @@ import {
   type TQueryPostData,
 } from '../../shared'
 
-import { mongoManager } from '@/config/db/MongoManager'
+import { COLLECTIONS, mongoManager } from '@/config/db'
 
 export async function getPost(
   getPostData: TQueryPostData,
 ): Promise<TGetPostLookupResponse> {
-  const db = await mongoManager.getConnectedDatabase()
   const { slug, type, groupId } = getPostData
   const isDraftMode = type === 'draft'
-  const selectedColl = isDraftMode
-    ? mongoManager.POSTS_DRAFT_COLL
-    : mongoManager.POSTS_COLL
-  const collection = db.collection<IPostDocument>(selectedColl)
+  const selectedColl = isDraftMode ? COLLECTIONS.POSTS_DRAFT : COLLECTIONS.POSTS
+  const collection =
+    await mongoManager.getCollection<IPostDocument>(selectedColl)
 
   const lookedupData = await collection
     .aggregate([
@@ -30,7 +28,7 @@ export async function getPost(
       },
       {
         $lookup: {
-          from: mongoManager.USERS_COLL,
+          from: COLLECTIONS.USERS,
           localField: 'author_id',
           foreignField: '_id',
           pipeline: [{ $project: { _id: 0, username: 1 } }],
@@ -43,7 +41,7 @@ export async function getPost(
 
       {
         $lookup: {
-          from: mongoManager.CATEGORY_COLL,
+          from: COLLECTIONS.CATEGORY,
           localField: 'categories',
           foreignField: '_id',
           pipeline: [
@@ -58,7 +56,7 @@ export async function getPost(
 
       {
         $lookup: {
-          from: mongoManager.POSTS_COLL,
+          from: COLLECTIONS.POSTS,
           localField: 'linked_posts.related',
           foreignField: '_id',
           let: { status: '$status' },

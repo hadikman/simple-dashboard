@@ -5,17 +5,16 @@ import {
   productErrors,
 } from '../'
 
-import { mongoManager } from '@/config/db/MongoManager'
+import { COLLECTIONS, mongoManager } from '@/config/db'
 
 export async function deleteProduct(
   deleteProductData: TDeleteProductData,
 ): Promise<TDeleteProductResponse> {
-  const db = await mongoManager.getConnectedDatabase()
-  const productsColl = db.collection<IProductDocument>(
-    mongoManager.PRODUCTS_COLL,
+  const productsColl = await mongoManager.getCollection<IProductDocument>(
+    COLLECTIONS.PRODUCTS,
   )
-  const productsDraftColl = db.collection<IProductDocument>(
-    mongoManager.PRODUCTS_DRAFT_COLL,
+  const productsDraftColl = await mongoManager.getCollection<IProductDocument>(
+    COLLECTIONS.PRODUCTS_DRAFT,
   )
   const { id, productGroupId, title, hasDraft, onlyDeleteDraft } =
     deleteProductData

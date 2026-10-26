@@ -9,14 +9,15 @@ import {
   postErrors,
 } from '../../shared'
 
-import { mongoManager } from '@/config/db/MongoManager'
+import { COLLECTIONS, mongoManager } from '@/config/db'
 import { getCurrentUTCDate } from '@/helpers/utils'
 
 export async function addPost(postData: TPostData): Promise<TAddPostResponse> {
-  const db = await mongoManager.getConnectedDatabase()
-  const postsColl = db.collection<IPostDocument>(mongoManager.POSTS_COLL)
-  const postsDraftColl = db.collection<IPostDocument>(
-    mongoManager.POSTS_DRAFT_COLL,
+  const postsColl = await mongoManager.getCollection<IPostDocument>(
+    COLLECTIONS.POSTS,
+  )
+  const postsDraftColl = await mongoManager.getCollection<IPostDocument>(
+    COLLECTIONS.POSTS_DRAFT,
   )
 
   const { author_id, categories, has_draft, linked_posts, advanced } = postData

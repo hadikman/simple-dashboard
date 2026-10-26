@@ -6,12 +6,11 @@ import {
   guaranteeErrors,
 } from '../'
 
-import { mongoManager } from '@/config/db/MongoManager'
+import { COLLECTIONS, mongoManager } from '@/config/db'
 
 export async function getGuarantees(): Promise<TGetGuaranteesResponse> {
-  const db = await mongoManager.getConnectedDatabase()
-  const collection = db.collection<IGuaranteeDocument>(
-    mongoManager.GUARANTEES_COLL,
+  const collection = await mongoManager.getCollection<IGuaranteeDocument>(
+    COLLECTIONS.GUARANTEES,
   )
 
   const lookedupData = (await collection
@@ -20,7 +19,7 @@ export async function getGuarantees(): Promise<TGetGuaranteesResponse> {
 
       {
         $lookup: {
-          from: mongoManager.PRODUCTS_COLL,
+          from: COLLECTIONS.PRODUCTS,
           localField: 'target_items.product_id',
           foreignField: '_id',
           pipeline: [
@@ -40,7 +39,7 @@ export async function getGuarantees(): Promise<TGetGuaranteesResponse> {
 
       {
         $lookup: {
-          from: mongoManager.CATEGORY_COLL,
+          from: COLLECTIONS.CATEGORY,
           localField: 'target_items.category_id',
           foreignField: '_id',
           pipeline: [{ $project: { _id: 1, name: 1 } }],
@@ -50,7 +49,7 @@ export async function getGuarantees(): Promise<TGetGuaranteesResponse> {
 
       {
         $lookup: {
-          from: mongoManager.BRANDS_COLL,
+          from: COLLECTIONS.BRANDS,
           localField: 'brand_id',
           foreignField: '_id',
           pipeline: [{ $project: { _id: 1, name: 1 } }],

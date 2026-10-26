@@ -9,18 +9,17 @@ import {
   guaranteeErrors,
 } from '../../shared'
 
-import { mongoManager } from '@/config/db/MongoManager'
+import { COLLECTIONS, mongoManager } from '@/config/db'
 import { getCurrentUTCDate } from '@/helpers/utils'
 
 export async function addGuarantee(
   guaranteeData: TGuaranteeData,
 ): Promise<TAddGuaranteeResponse> {
-  const db = await mongoManager.getConnectedDatabase()
-  const guaranteesColl = db.collection<IGuaranteeDocument>(
-    mongoManager.GUARANTEES_COLL,
+  const guaranteesColl = await mongoManager.getCollection<IGuaranteeDocument>(
+    COLLECTIONS.GUARANTEES,
   )
-  const productsColl = db.collection<IProductDocument>(
-    mongoManager.PRODUCTS_COLL,
+  const productsColl = await mongoManager.getCollection<IProductDocument>(
+    COLLECTIONS.PRODUCTS,
   )
 
   const { target_items, brand_id, ...rest } = guaranteeData

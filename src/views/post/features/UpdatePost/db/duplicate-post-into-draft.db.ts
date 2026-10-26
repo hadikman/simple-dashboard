@@ -5,15 +5,16 @@ import {
   type TDuplicatePostIntoDraftResponse,
 } from '../../../shared'
 
-import { mongoManager } from '@/config/db/MongoManager'
+import { COLLECTIONS, mongoManager } from '@/config/db'
 
 export async function duplicatePostIntoDraft(
   duplicatePostIntoDraftData: TDuplicatePostIntoDraftData,
 ): Promise<TDuplicatePostIntoDraftResponse> {
-  const db = await mongoManager.getConnectedDatabase()
-  const postsColl = db.collection<IPostDocument>(mongoManager.POSTS_COLL)
-  const postsDraftColl = db.collection<IPostDocument>(
-    mongoManager.POSTS_DRAFT_COLL,
+  const postsColl = await mongoManager.getCollection<IPostDocument>(
+    COLLECTIONS.POSTS,
+  )
+  const postsDraftColl = await mongoManager.getCollection<IPostDocument>(
+    COLLECTIONS.POSTS_DRAFT,
   )
 
   const { postGroupId } = duplicatePostIntoDraftData

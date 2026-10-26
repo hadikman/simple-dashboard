@@ -5,5 +5,8 @@ export class DomainError extends Error {
     options?: ErrorOptions,
   ) {
     super(message, options)
+    // Explicit name per class (set in subclasses) survives minification,
+    // unlike relying on the class's own name.
+    this.name = 'DomainError'
   }
 }

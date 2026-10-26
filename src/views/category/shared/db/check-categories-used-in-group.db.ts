@@ -6,29 +6,28 @@ import {
   categoryErrors,
 } from '../'
 
-import { mongoManager } from '@/config/db/MongoManager'
+import { COLLECTIONS, mongoManager } from '@/config/db'
 
 export async function checkCategoriesUsedInGroup(
   queryCategoriesUsedInGroupData: TQueryCategoriesUsedInGroupData,
 ): Promise<TCheckCategoriesUsedInGroupResponse> {
-  const db = await mongoManager.getConnectedDatabase()
   let collection, drafCollection
   const { category_group, ids } = queryCategoriesUsedInGroupData
 
   if (category_group === 'posts') {
-    collection = db.collection<{ categories: ObjectId[] }>(
-      mongoManager.POSTS_COLL,
+    collection = await mongoManager.getCollection<{ categories: ObjectId[] }>(
+      COLLECTIONS.POSTS,
     )
-    drafCollection = db.collection<{ categories: ObjectId[] }>(
-      mongoManager.POSTS_DRAFT_COLL,
-    )
+    drafCollection = await mongoManager.getCollection<{
+      categories: ObjectId[]
+    }>(COLLECTIONS.POSTS_DRAFT)
   } else {
-    collection = db.collection<{ categories: ObjectId[] }>(
-      mongoManager.PRODUCTS_COLL,
+    collection = await mongoManager.getCollection<{ categories: ObjectId[] }>(
+      COLLECTIONS.PRODUCTS,
     )
-    drafCollection = db.collection<{ categories: ObjectId[] }>(
-      mongoManager.PRODUCTS_DRAFT_COLL,
-    )
+    drafCollection = await mongoManager.getCollection<{
+      categories: ObjectId[]
+    }>(COLLECTIONS.PRODUCTS_DRAFT)
   }
 
   const objectIds = ids.map(id => new ObjectId(id))

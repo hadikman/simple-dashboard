@@ -9,18 +9,19 @@ import {
   brandErrors,
 } from '../../shared'
 
-import { mongoManager } from '@/config/db/MongoManager'
+import { COLLECTIONS, mongoManager } from '@/config/db'
 
 export async function deleteBrand(
   deleteBrandData: TDeleteBrandData,
 ): Promise<TDeleteBrandResponse> {
-  const db = await mongoManager.getConnectedDatabase()
-  const brandsColl = db.collection<IBrandDocument>(mongoManager.BRANDS_COLL)
-  const productsColl = db.collection<IProductDocument>(
-    mongoManager.PRODUCTS_COLL,
+  const brandsColl = await mongoManager.getCollection<IBrandDocument>(
+    COLLECTIONS.BRANDS,
   )
-  const productsDraftColl = db.collection<IProductDocument>(
-    mongoManager.PRODUCTS_DRAFT_COLL,
+  const productsColl = await mongoManager.getCollection<IProductDocument>(
+    COLLECTIONS.PRODUCTS,
+  )
+  const productsDraftColl = await mongoManager.getCollection<IProductDocument>(
+    COLLECTIONS.PRODUCTS_DRAFT,
   )
 
   const { id, name } = deleteBrandData

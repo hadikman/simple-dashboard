@@ -9,16 +9,17 @@ import {
   offerErrors,
 } from '../../shared'
 
-import { mongoManager } from '@/config/db/MongoManager'
+import { COLLECTIONS, mongoManager } from '@/config/db'
 import { getCurrentUTCDate } from '@/helpers/utils'
 
 export async function addOffer(
   offerData: TOfferData,
 ): Promise<TAddOfferResponse> {
-  const db = await mongoManager.getConnectedDatabase()
-  const offersColl = db.collection<IOfferDocument>(mongoManager.OFFERS_COLL)
-  const productsColl = db.collection<IProductDocument>(
-    mongoManager.PRODUCTS_COLL,
+  const offersColl = await mongoManager.getCollection<IOfferDocument>(
+    COLLECTIONS.OFFERS,
+  )
+  const productsColl = await mongoManager.getCollection<IProductDocument>(
+    COLLECTIONS.PRODUCTS,
   )
 
   const { target_items, ...rest } = offerData

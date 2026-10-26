@@ -8,11 +8,12 @@ import {
   userErrors,
 } from '../../shared'
 
-import { mongoManager } from '@/config/db/MongoManager'
+import { COLLECTIONS, mongoManager } from '@/config/db'
 
 export async function getUser(data: TGetUserData): Promise<TGetUserResponse> {
-  const db = await mongoManager.getConnectedDatabase()
-  const collection = db.collection<IUserDocument>(mongoManager.USERS_COLL)
+  const collection = await mongoManager.getCollection<IUserDocument>(
+    COLLECTIONS.USERS,
+  )
 
   const userData = await collection.findOne(
     { _id: new ObjectId(data.id) },

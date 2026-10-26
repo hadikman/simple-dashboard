@@ -5,13 +5,14 @@ import {
   brandErrors,
 } from '../'
 
-import { mongoManager } from '@/config/db/MongoManager'
+import { COLLECTIONS, mongoManager } from '@/config/db'
 
 export async function checkDuplicateBrand(
   data: TQueryDuplicateBrandData,
 ): Promise<TCheckDuplicateBrandResponse> {
-  const db = await mongoManager.getConnectedDatabase()
-  const collection = db.collection<IBrandDocument>(mongoManager.BRANDS_COLL)
+  const collection = await mongoManager.getCollection<IBrandDocument>(
+    COLLECTIONS.BRANDS,
+  )
 
   const { slug } = data
 

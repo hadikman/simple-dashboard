@@ -8,7 +8,7 @@ import {
   type TUpdatePostResponse,
 } from '../../../shared'
 
-import { mongoManager } from '@/config/db/MongoManager'
+import { COLLECTIONS, mongoManager } from '@/config/db'
 import { getCurrentUTCDate, isString } from '@/helpers/utils'
 
 export async function updatePost(
@@ -18,11 +18,11 @@ export async function updatePost(
     updatePostData
   const isPublishedMode = updatePostData.status === 'published'
 
-  const db = await mongoManager.getConnectedDatabase()
   const selectedColl = isPublishedMode
-    ? mongoManager.POSTS_COLL
-    : mongoManager.POSTS_DRAFT_COLL
-  const collection = db.collection<IPostDocument>(selectedColl)
+    ? COLLECTIONS.POSTS
+    : COLLECTIONS.POSTS_DRAFT
+  const collection =
+    await mongoManager.getCollection<IPostDocument>(selectedColl)
 
   const scheduled_publish = updatePostData.advanced?.scheduled_publish
   const advanced_scheduled_publish = scheduled_publish as
@@ -119,7 +119,7 @@ export async function updatePost(
     { $set: mongoUpdateData },
     { returnDocument: 'after' },
   )
-
+  console.log('DB:', data)
   if (!data) {
     return {
       success: false,

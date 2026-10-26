@@ -7,16 +7,17 @@ import {
   brandErrors,
 } from '../../shared'
 
-import { mongoManager } from '@/config/db/MongoManager'
 import { getCurrentUTCDate } from '@/helpers/utils'
+import { mongoManager, COLLECTIONS } from '@/config/db'
 
 export async function updateBrand(
   updateProductData: TUpdateBrandData,
 ): Promise<TUpdateBrandResponse> {
   const { id, categories, ...rest } = updateProductData
 
-  const db = await mongoManager.getConnectedDatabase()
-  const collection = db.collection<IBrandDocument>(mongoManager.BRANDS_COLL)
+  const collection = await mongoManager.getCollection<IBrandDocument>(
+    COLLECTIONS.BRANDS,
+  )
 
   const objectId = new ObjectId(id)
   const categoriesObjectIdOrUndefined = categories

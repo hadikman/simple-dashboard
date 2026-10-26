@@ -11,7 +11,7 @@ import {
   productErrors,
 } from '../../shared'
 
-import { mongoManager } from '@/config/db/MongoManager'
+import { COLLECTIONS, mongoManager } from '@/config/db'
 import { getCurrentUTCDate, isString } from '@/helpers/utils'
 
 export async function updateProduct(
@@ -29,15 +29,15 @@ export async function updateProduct(
   } = updateProductData
   const isPublishedMode = updateProductData.status === 'published'
 
-  const db = await mongoManager.getConnectedDatabase()
   const selectedColl = isPublishedMode
-    ? mongoManager.PRODUCTS_COLL
-    : mongoManager.PRODUCTS_DRAFT_COLL
-  const guaranteeColl = db.collection<IGuaranteeDocument>(
-    mongoManager.GUARANTEES_COLL,
+    ? COLLECTIONS.PRODUCTS
+    : COLLECTIONS.PRODUCTS_DRAFT
+  const guaranteeColl = await mongoManager.getCollection<IGuaranteeDocument>(
+    COLLECTIONS.GUARANTEES,
   )
 
-  const collection = db.collection<IProductDocument>(selectedColl)
+  const collection =
+    await mongoManager.getCollection<IProductDocument>(selectedColl)
 
   const userObjectId = new ObjectId(author_id)
   const brandObjectIdOrUndefined = isString(brand_id)

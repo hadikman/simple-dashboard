@@ -6,14 +6,15 @@ import {
   userErrors,
 } from '../../shared'
 
-import { mongoManager } from '@/config/db/MongoManager'
+import { COLLECTIONS, mongoManager } from '@/config/db'
 import { comparePassword } from '@/helpers/utils'
 
 export async function loginUser(
   userData: TLoginUserData,
 ): Promise<TLoginUserResponse> {
-  const db = await mongoManager.getConnectedDatabase()
-  const collection = db.collection<IUserDocument>(mongoManager.USERS_COLL)
+  const collection = await mongoManager.getCollection<IUserDocument>(
+    COLLECTIONS.USERS,
+  )
 
   const { email, password } = userData
 

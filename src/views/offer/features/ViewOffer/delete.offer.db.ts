@@ -9,18 +9,19 @@ import {
   offerErrors,
 } from '../../shared'
 
-import { mongoManager } from '@/config/db/MongoManager'
+import { COLLECTIONS, mongoManager } from '@/config/db'
 
 export async function deleteOffer(
   deleteOfferData: TDeleteOfferData,
 ): Promise<TDeleteOfferResponse> {
-  const db = await mongoManager.getConnectedDatabase()
-  const offersColl = db.collection<IOfferDocument>(mongoManager.OFFERS_COLL)
-  const productsColl = db.collection<IProductDocument>(
-    mongoManager.PRODUCTS_COLL,
+  const offersColl = await mongoManager.getCollection<IOfferDocument>(
+    COLLECTIONS.OFFERS,
   )
-  const productsDraftColl = db.collection<IProductDocument>(
-    mongoManager.PRODUCTS_DRAFT_COLL,
+  const productsColl = await mongoManager.getCollection<IProductDocument>(
+    COLLECTIONS.PRODUCTS,
+  )
+  const productsDraftColl = await mongoManager.getCollection<IProductDocument>(
+    COLLECTIONS.PRODUCTS_DRAFT,
   )
 
   const { id, name } = deleteOfferData

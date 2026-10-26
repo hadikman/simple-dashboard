@@ -7,15 +7,14 @@ import {
   categoryErrors,
 } from '../'
 
-import { mongoManager } from '@/config/db/MongoManager'
+import { COLLECTIONS, mongoManager } from '@/config/db'
 
 export async function checkDuplicateCategory(
   checkDuplicateCategoryData: TQueryDuplicateCategoryData,
 ): Promise<TCheckDuplicateCategoryResponse> {
-  const db = await mongoManager.getConnectedDatabase()
   const { category_group, parentId, name } = checkDuplicateCategoryData
-  const collection = db.collection<ICategoryDocument>(
-    mongoManager.CATEGORY_COLL,
+  const collection = await mongoManager.getCollection<ICategoryDocument>(
+    COLLECTIONS.CATEGORY,
   )
 
   if (parentId) {

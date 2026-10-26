@@ -8,13 +8,14 @@ import {
   offerErrors,
 } from '../'
 
-import { mongoManager } from '@/config/db/MongoManager'
+import { COLLECTIONS, mongoManager } from '@/config/db'
 
 export async function getOffersProps<
   T extends Partial<Record<keyof IOfferDocument, unknown>>,
 >(keys: ProjectionKeys<T>): Promise<TGetOffersPropsResponse<T>> {
-  const db = await mongoManager.getConnectedDatabase()
-  const collection = db.collection<IOfferDocument>(mongoManager.OFFERS_COLL)
+  const collection = await mongoManager.getCollection<IOfferDocument>(
+    COLLECTIONS.OFFERS,
+  )
 
   const cursor = collection.find()
   const projectCursor = cursor.project<T & { _id: ObjectId }>(keys)

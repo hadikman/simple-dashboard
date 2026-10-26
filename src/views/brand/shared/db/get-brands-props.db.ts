@@ -9,17 +9,18 @@ import {
   brandErrors,
 } from '../'
 
-import { mongoManager } from '@/config/db/MongoManager'
+import { COLLECTIONS, mongoManager } from '@/config/db'
 
 export async function getBrandsProps<
   T extends Partial<Record<keyof IBrandDocument, unknown>>,
 >(
   getBrandsPropsData: TQueryBrandsPropsData<T>,
 ): Promise<TGetBrandsPropsResponse<T>> {
-  const db = await mongoManager.getConnectedDatabase()
   const { keys } = getBrandsPropsData
 
-  const collection = db.collection<IBrandDocument>(mongoManager.BRANDS_COLL)
+  const collection = await mongoManager.getCollection<IBrandDocument>(
+    COLLECTIONS.BRANDS,
+  )
 
   const cursor = collection.find()
   const projectCursor = cursor.project<T & { _id: ObjectId }>(keys)

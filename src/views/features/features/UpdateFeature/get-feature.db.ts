@@ -6,13 +6,14 @@ import {
   featureErrors,
 } from '../../shared'
 
-import { mongoManager } from '@/config/db/MongoManager'
+import { COLLECTIONS, mongoManager } from '@/config/db'
 
 export async function getFeature(
   getFeatureData: TQueryFeatureData,
 ): Promise<TGetFeatureLookupResponse> {
-  const db = await mongoManager.getConnectedDatabase()
-  const collection = db.collection<IFeatureDocument>(mongoManager.FEATURES_COLL)
+  const collection = await mongoManager.getCollection<IFeatureDocument>(
+    COLLECTIONS.FEATURES,
+  )
   const { slug } = getFeatureData
 
   const lookedupData = await collection
@@ -21,7 +22,7 @@ export async function getFeature(
 
       {
         $lookup: {
-          from: mongoManager.CATEGORY_COLL,
+          from: COLLECTIONS.CATEGORY,
           localField: 'applicable_category_id',
           foreignField: '_id',
           pipeline: [

@@ -7,14 +7,15 @@ import {
   featureErrors,
 } from '../../shared'
 
-import { mongoManager } from '@/config/db/MongoManager'
+import { COLLECTIONS, mongoManager } from '@/config/db'
 import { getCurrentUTCDate } from '@/helpers/utils'
 
 export async function addFeature(
   featureData: TFeatureData,
 ): Promise<TAddFeatureResponse> {
-  const db = await mongoManager.getConnectedDatabase()
-  const collection = db.collection<IFeatureDocument>(mongoManager.FEATURES_COLL)
+  const collection = await mongoManager.getCollection<IFeatureDocument>(
+    COLLECTIONS.FEATURES,
+  )
 
   const { applicable_category_id, ...rest } = featureData
 

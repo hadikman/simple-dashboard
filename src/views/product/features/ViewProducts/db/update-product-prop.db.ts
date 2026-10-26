@@ -5,7 +5,7 @@ import {
   productErrors,
 } from '../../../shared'
 
-import { mongoManager } from '@/config/db/MongoManager'
+import { COLLECTIONS, mongoManager } from '@/config/db'
 import { getCurrentUTCDate } from '@/helpers/utils'
 
 export async function updateProductProp(
@@ -14,11 +14,11 @@ export async function updateProductProp(
   const { product_group_id, status, updatePropsData } = updateProductPropData
   const isPublishedMode = status === 'published'
 
-  const db = await mongoManager.getConnectedDatabase()
   const selectedColl = isPublishedMode
-    ? mongoManager.PRODUCTS_COLL
-    : mongoManager.PRODUCTS_DRAFT_COLL
-  const collection = db.collection<IProductDocument>(selectedColl)
+    ? COLLECTIONS.PRODUCTS
+    : COLLECTIONS.PRODUCTS_DRAFT
+  const collection =
+    await mongoManager.getCollection<IProductDocument>(selectedColl)
 
   const currentUTCDate = getCurrentUTCDate()
 

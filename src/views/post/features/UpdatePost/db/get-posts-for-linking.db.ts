@@ -1,18 +1,19 @@
 import { FindCursor } from 'mongodb'
 
 import {
-  postErrors,
   type ILinkedPostLookup,
   type IPostDocument,
   type TGetPostsForLinkingResponse,
   type TLinkedPostLookupWithId,
+  postErrors,
 } from '../../../shared'
 
-import { mongoManager } from '@/config/db/MongoManager'
+import { COLLECTIONS, mongoManager } from '@/config/db'
 
 export async function getPostsForLinking(): Promise<TGetPostsForLinkingResponse> {
-  const db = await mongoManager.getConnectedDatabase()
-  const collection = db.collection<IPostDocument>(mongoManager.POSTS_COLL)
+  const collection = await mongoManager.getCollection<IPostDocument>(
+    COLLECTIONS.POSTS,
+  )
 
   const cursor = collection.find({ status: 'published' })
   const projectCursor = cursor.sort({ _id: -1 }).project({

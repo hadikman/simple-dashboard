@@ -8,11 +8,12 @@ import {
   productErrors,
 } from '../'
 
-import { mongoManager } from '@/config/db/MongoManager'
+import { COLLECTIONS, mongoManager } from '@/config/db'
 
 export async function getProductsForLinking(): Promise<TGetProductsForLinkingResponse> {
-  const db = await mongoManager.getConnectedDatabase()
-  const collection = db.collection<IProductDocument>(mongoManager.PRODUCTS_COLL)
+  const collection = await mongoManager.getCollection<IProductDocument>(
+    COLLECTIONS.PRODUCTS,
+  )
 
   const cursor = collection.find({ status: 'published' })
   const projectCursor = cursor.sort({ _id: -1 }).project({

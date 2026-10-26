@@ -7,14 +7,15 @@ import {
   brandErrors,
 } from '../../shared'
 
-import { mongoManager } from '@/config/db/MongoManager'
+import { COLLECTIONS, mongoManager } from '@/config/db'
 
 export async function getBrand(
   getBrandData: TQueryBrandData,
 ): Promise<TGetBrandLookupResponse> {
-  const db = await mongoManager.getConnectedDatabase()
   const { slug } = getBrandData
-  const collection = db.collection<IBrandDocument>(mongoManager.BRANDS_COLL)
+  const collection = await mongoManager.getCollection<IBrandDocument>(
+    COLLECTIONS.BRANDS,
+  )
 
   const lookedupData = await collection
     .aggregate([
@@ -24,7 +25,7 @@ export async function getBrand(
 
       {
         $lookup: {
-          from: mongoManager.CATEGORY_COLL,
+          from: COLLECTIONS.CATEGORY,
           localField: 'categories',
           foreignField: '_id',
           pipeline: [

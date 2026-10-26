@@ -9,13 +9,14 @@ import {
   productErrors,
 } from '../../../shared'
 
-import { mongoManager } from '@/config/db/MongoManager'
+import { COLLECTIONS, mongoManager } from '@/config/db'
 
 export async function copyProduct({
   id,
 }: TCopyProductData): Promise<TCopyProductResponse> {
-  const db = await mongoManager.getConnectedDatabase()
-  const collection = db.collection<IProductDocument>(mongoManager.PRODUCTS_COLL)
+  const collection = await mongoManager.getCollection<IProductDocument>(
+    COLLECTIONS.PRODUCTS,
+  )
 
   const objectId = new ObjectId(id)
 

@@ -5,14 +5,15 @@ import {
   productErrors,
 } from '../'
 
-import { mongoManager } from '@/config/db/MongoManager'
+import { COLLECTIONS, mongoManager } from '@/config/db'
 import { getPublishedSlugCached } from './published-slug-cache'
 
 export async function checkDuplicateProduct(
   checkDuplicateFeatureData: TQueryDuplicateProductData,
 ): Promise<TCheckDuplicateProductResponse> {
-  const db = await mongoManager.getConnectedDatabase()
-  const collection = db.collection<IProductDocument>(mongoManager.PRODUCTS_COLL)
+  const collection = await mongoManager.getCollection<IProductDocument>(
+    COLLECTIONS.PRODUCTS,
+  )
   const { slug, productGroupId } = checkDuplicateFeatureData
   let existingSlugProduct = null,
     publishedSlug = null

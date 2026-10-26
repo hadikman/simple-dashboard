@@ -5,13 +5,14 @@ import {
   offerErrors,
 } from '../'
 
-import { mongoManager } from '@/config/db/MongoManager'
+import { COLLECTIONS, mongoManager } from '@/config/db'
 
 export async function checkDuplicateOffer(
   queryDuplicateGuaranteePropData: TQueryDuplicateGuaranteePropData,
 ): Promise<TCheckDuplicateOfferResponse> {
-  const db = await mongoManager.getConnectedDatabase()
-  const collection = db.collection<IOfferDocument>(mongoManager.OFFERS_COLL)
+  const collection = await mongoManager.getCollection<IOfferDocument>(
+    COLLECTIONS.OFFERS,
+  )
 
   const { key, value } = queryDuplicateGuaranteePropData
 

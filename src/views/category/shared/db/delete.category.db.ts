@@ -7,23 +7,22 @@ import {
   categoryErrors,
 } from '../'
 
-import { mongoManager } from '@/config/db/MongoManager'
+import { COLLECTIONS, mongoManager } from '@/config/db'
 
 export async function deleteCategory(
   deleteCategoryData: TDeleteCategoryData,
 ): Promise<TDeleteCategoryResponse> {
-  const db = await mongoManager.getConnectedDatabase()
   const { category_group, parentId, id, name, childrenId } = deleteCategoryData
 
-  const collection = db.collection<ICategoryDocument>(
-    mongoManager.CATEGORY_COLL,
+  const collection = await mongoManager.getCollection<ICategoryDocument>(
+    COLLECTIONS.CATEGORY,
   )
   let featuresColl
 
   if (category_group === 'products') {
-    featuresColl = db.collection<{ applicable_category_id: ObjectId | null }>(
-      mongoManager.FEATURES_COLL,
-    )
+    featuresColl = await mongoManager.getCollection<{
+      applicable_category_id: ObjectId | null
+    }>(COLLECTIONS.FEATURES)
   }
 
   const objectId = new ObjectId(id)

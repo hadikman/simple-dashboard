@@ -7,18 +7,18 @@ import {
   productErrors,
 } from '../'
 
-import { mongoManager } from '@/config/db/MongoManager'
+import { COLLECTIONS, mongoManager } from '@/config/db'
 
 export async function getProduct(
   getProductData: TQueryProductData,
 ): Promise<TGetProductLookupResponse> {
-  const db = await mongoManager.getConnectedDatabase()
   const { slug, type, groupId } = getProductData
   const isDraftMode = type === 'draft'
   const selectedColl = isDraftMode
-    ? mongoManager.PRODUCTS_DRAFT_COLL
-    : mongoManager.PRODUCTS_COLL
-  const collection = db.collection<IProductDocument>(selectedColl)
+    ? COLLECTIONS.PRODUCTS_DRAFT
+    : COLLECTIONS.PRODUCTS
+  const collection =
+    await mongoManager.getCollection<IProductDocument>(selectedColl)
 
   const lookedupData = await collection
     .aggregate([
@@ -31,7 +31,7 @@ export async function getProduct(
 
       {
         $lookup: {
-          from: mongoManager.USERS_COLL,
+          from: COLLECTIONS.USERS,
           localField: 'author_id',
           foreignField: '_id',
           pipeline: [{ $project: { _id: 0, username: 1 } }],
@@ -53,7 +53,7 @@ export async function getProduct(
 
       {
         $lookup: {
-          from: mongoManager.BRANDS_COLL,
+          from: COLLECTIONS.BRANDS,
           localField: 'brand_id',
           foreignField: '_id',
           pipeline: [{ $project: { _id: 0, name: 1 } }],
@@ -66,7 +66,7 @@ export async function getProduct(
 
       {
         $lookup: {
-          from: mongoManager.CATEGORY_COLL,
+          from: COLLECTIONS.CATEGORY,
           localField: 'categories',
           foreignField: '_id',
           pipeline: [
@@ -80,7 +80,7 @@ export async function getProduct(
 
       {
         $lookup: {
-          from: mongoManager.PRODUCTS_COLL,
+          from: COLLECTIONS.PRODUCTS,
           let: {
             upsells: { $ifNull: ['$linked_products.upsells', []] },
             cross_sells: { $ifNull: ['$linked_products.cross_sells', []] },
@@ -145,7 +145,7 @@ export async function getProduct(
 
       {
         $lookup: {
-          from: mongoManager.FEATURES_COLL,
+          from: COLLECTIONS.FEATURES,
           let: {
             features_arr: { $ifNull: ['$features', []] },
           },

@@ -5,11 +5,12 @@ import {
   brandErrors,
 } from '../'
 
-import { mongoManager } from '@/config/db/MongoManager'
+import { COLLECTIONS, mongoManager } from '@/config/db'
 
 export async function getBrands(): Promise<TGetBrandsResponse> {
-  const db = await mongoManager.getConnectedDatabase()
-  const collection = db.collection<IBrandDocument>(mongoManager.BRANDS_COLL)
+  const collection = await mongoManager.getCollection<IBrandDocument>(
+    COLLECTIONS.BRANDS,
+  )
 
   const lookedupDate = (await collection
     .aggregate([
@@ -17,7 +18,7 @@ export async function getBrands(): Promise<TGetBrandsResponse> {
 
       {
         $lookup: {
-          from: mongoManager.CATEGORY_COLL,
+          from: COLLECTIONS.CATEGORY,
           localField: 'categories',
           foreignField: '_id',
           pipeline: [
